@@ -1,5 +1,5 @@
 
-export { WalletProvider } from '../../../../Downloads/web-examples-main/advanced/dapps/react-dapp-v2/src/contexts/WalletProvider'
+export { WalletProvider } from './providers//WalletProvider'
 
 export * from './hooks/hooks'
 export * from './config/chains'
