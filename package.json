@@ -1,5 +1,5 @@
 {
-  "name": "ca-common-h5",
+  "name": "ca-common-web",
   "version": "0.1.0",
   "main": "dist/index.umd.js",
   "module": "dist/index.es.js",
@@ -8,7 +8,8 @@
     ".": {
       "import": "./dist/index.es.js",
       "require": "./dist/index.umd.js",
-      "default": "./dist/index.es.js"
+      "default": "./dist/index.es.js",
+      "types": "./dist/types/index.d.ts"
     }
   },
   "files": [
