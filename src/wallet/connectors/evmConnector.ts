@@ -7,9 +7,8 @@ import {
   type Address,
   type Chain
 } from 'viem'
-import type { DiscoveredWallet, EIP1193Provider } from '../providers/eip6963'
 import { defaultChains } from '../config/chains'
-import { ConnectorType, ConnectType, IWalletConnector, WalletState } from './types'
+import { ConnectorType, ConnectType, DiscoveredWallet, EIP1193Provider, IWalletConnector, WalletState } from '../types'
 
 const DEFAULT_STORAGE_KEY = 'ca-wallet-sdk:session'
 

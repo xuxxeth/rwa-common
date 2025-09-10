@@ -12,5 +12,5 @@
     "declaration": true,
     "declarationDir": "dist/types"
   },
-  "include": ["src", ".storybook", "../../Downloads/web-examples-main/advanced/dapps/react-dapp-v2/src/contexts/WalletProvider.tsx", "../../Downloads/web-examples-main/advanced/dapps/react-dapp-v2/src/contexts/WalletProvider2.tsx"]
+  "include": ["src", ".storybook"]
 }

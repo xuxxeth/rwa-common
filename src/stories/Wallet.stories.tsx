@@ -5,7 +5,7 @@ import { Button } from '../components/button';
 import { useAccount, useChainId, useConnect, useDisconnect, useSwitchChain, useWallets } from '../wallet/hooks/hooks';
 import { WalletProvider } from '../wallet/providers/WalletProvider';
 import { bsc, xLayer } from '../wallet/config/chains';
-import { ConnectorType } from '../wallet/connectors/types';
+import { ConnectorType } from '../wallet/types';
 
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export

@@ -1,13 +1,26 @@
-// src/connectors/types.ts
 import type { Address, Chain } from 'viem'
-import { DiscoveredWallet } from '../providers/eip6963'
 
-// export type WalletState = {
-//   accounts: Address[]
-//   chainId: number | null
-//   connected: boolean
-//   wallet?: DiscoveredWallet
-// }
+export type EIP1193Provider = {
+  request(args: { method: string; params?: any[] | object }): Promise<any>
+  on?: (event: string, listener: (...args: any[]) => void) => void
+  removeListener?: (event: string, listener: (...args: any[]) => void) => void
+  isMetaMask?: boolean
+  isOKXWallet?: boolean
+  isCoinbaseWallet?: boolean
+  id?: string
+}
+
+export type WalletInfo = {
+  uuid: string
+  name: string
+  icon?: string
+  rdns?: string
+}
+
+export type DiscoveredWallet = {
+  info: WalletInfo
+  provider: EIP1193Provider
+}
 
 export type ManagerConfig = {
   chains?: Chain[]
@@ -41,5 +54,7 @@ export enum ConnectorType {
   Injected = 'injected',
   WalletConnect = 'walletconnect',
 }
+
+
 
 
