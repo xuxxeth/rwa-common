@@ -4,8 +4,13 @@ import { fn } from 'storybook/test';
 import { Button } from '../components/button';
 import { useAccount, useChainId, useConnect, useDisconnect, useSwitchChain, useWallets } from '../wallet/hooks/hooks';
 import { WalletProvider } from '../wallet/providers/WalletProvider';
-import { bsc, xLayer } from '../wallet/config/chains';
+import { bsc, xLayer, xLayerTestnet } from '../wallet/config/chains';
 import { ConnectorType } from '../wallet/types';
+import { useTrading } from '../contract/hooks/useTrading';
+import { useEffect } from 'react';
+import { useClient } from '../wallet/hooks/useClient';
+import { useCounter } from '../contract/hooks/useCounter';
+import { bscTestnet, x1Testnet } from 'viem/chains';
 
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
@@ -31,7 +36,7 @@ type Story = StoryObj<typeof meta>;
 
 export const WalletApp: React.FC = () => {
   return (
-    <WalletProvider config={{ chains: [bsc, xLayer], defaultChainId: 56 }}>
+    <WalletProvider config={{ chains: [bscTestnet, xLayerTestnet], defaultChainId: 97 }}>
       <WalletDemo />
     </WalletProvider>
   )
@@ -45,6 +50,17 @@ const WalletDemo: React.FC = () => {
   const account = useAccount()
   const chainId = useChainId()
   const switchChain = useSwitchChain()
+
+  const { handlePlaceOrder } = useTrading()
+  const { publicClient} = useClient()
+  const { handleGetX, handleInc, handleIncBy } = useCounter()
+
+  useEffect(() => {
+     publicClient?.getBlockNumber() 
+      .then(res => {
+        console.log(res)
+      })
+  }, [handlePlaceOrder, publicClient])
 
   return (
     <>
@@ -79,6 +95,13 @@ const WalletDemo: React.FC = () => {
     <div className=' mt-11'>
       <Button onClick={() => connect(ConnectorType.WalletConnect, wallets[0] )} label='WalletConnect'></Button>
       <Button onClick={() => disconnect()} label='disconnectWC'></Button>
+    </div>
+    <div className='mt-[100px]'>
+      <div>
+        <Button onClick={() => handleGetX()} label='Get X'></Button>
+        <Button onClick={() => handleInc()} label='Inc'></Button>
+        <Button onClick={() => handleIncBy('5')} label='IncBy'></Button>
+      </div>
     </div>
     </>
 

@@ -1,4 +1,5 @@
 import type { Address, Chain } from 'viem'
+import { bsc, bscTestnet, xLayer, xLayerTestnet } from './config/chains';
 
 export type EIP1193Provider = {
   request(args: { method: string; params?: any[] | object }): Promise<any>
@@ -53,6 +54,13 @@ export interface IWalletConnector {
 export enum ConnectorType {
   Injected = 'injected',
   WalletConnect = 'walletconnect',
+}
+
+export enum ChainId {
+  BSC = bsc.id,
+  XLAYER = xLayer.id,
+  BSCTEST  = bscTestnet.id,
+  XLAYERTEST = xLayerTestnet.id
 }
 
 

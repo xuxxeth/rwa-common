@@ -1,4 +1,5 @@
-import { defineChain } from 'viem'
+import { Chain, defineChain } from 'viem'
+import { xphereTestnet } from 'viem/chains'
 
 export const bsc = defineChain({
   id: 56,
@@ -59,3 +60,6 @@ export const xLayerTestnet = defineChain({
 
 export type SupportedChain = typeof bsc | typeof xLayer | typeof bscTestnet | typeof xLayerTestnet
 export const defaultChains = [bsc, xLayer]
+
+
+

@@ -11,6 +11,10 @@ export function useWallets() {
   return useWalletContext().wallets
 }
 
+export function useChains() {
+  return useWalletContext().chains
+}
+
 export function useConnect() {
   const { connect } = useWalletContext()
   return useCallback(async (type: ConnectorType, wallet: DiscoveredWallet) => {
