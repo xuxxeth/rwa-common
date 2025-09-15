@@ -7,7 +7,7 @@ import { WalletProvider } from '../wallet/providers/WalletProvider';
 import { bsc, xLayer, xLayerTestnet } from '../wallet/config/chains';
 import { ConnectorType } from '../wallet/types';
 import { useTrading } from '../contract/hooks/useTrading';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useClient } from '../wallet/hooks/useClient';
 import { useCounter } from '../contract/hooks/useCounter';
 import { bscTestnet, x1Testnet } from 'viem/chains';
@@ -62,12 +62,19 @@ const WalletDemo: React.FC = () => {
       })
   }, [handlePlaceOrder, publicClient])
 
+  const [xValue, setXValue] = useState(0)
+  const getX = useCallback(async () => {
+    const res = await handleGetX()
+    console.log(res)
+    setXValue(Number(res))
+  }, [handleGetX])
+
   return (
     <>
     <div className='flex gap-x-5'>
       <div className=''>
         {
-          [bsc, xLayer].map(chain => {
+          [bscTestnet, xLayerTestnet].map(chain => {
             return (
               <div key={chain.id}>
                 <Button onClick={() => {
@@ -97,10 +104,12 @@ const WalletDemo: React.FC = () => {
       <Button onClick={() => disconnect()} label='disconnectWC'></Button>
     </div>
     <div className='mt-[100px]'>
-      <div>
-        <Button onClick={() => handleGetX()} label='Get X'></Button>
+      <div className='mb-5'>Contract Methods: </div>
+      <div className=' flex gap-x-4 items-center'>
+        <Button onClick={() => getX()} label='Get X:'></Button> <span>[ {xValue} ]</span>
         <Button onClick={() => handleInc()} label='Inc'></Button>
         <Button onClick={() => handleIncBy('5')} label='IncBy'></Button>
+        {/* <Button onClick={() => handleIncTest()} label='Get X Test'></Button> */}
       </div>
     </div>
     </>

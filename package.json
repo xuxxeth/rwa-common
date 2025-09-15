@@ -1,15 +1,15 @@
 {
   "name": "ca-common-web",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "main": "dist/index.umd.js",
   "module": "dist/index.es.js",
   "types": "./dist/types/index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
+      "types": "./dist/types/index.d.ts",
       "import": "./dist/index.es.js",
-      "require": "./dist/index.umd.js",
-      "default": "./dist/index.es.js",
-      "types": "./dist/types/index.d.ts"
+      "require": "./dist/index.umd.js"
     }
   },
   "files": [

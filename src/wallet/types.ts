@@ -51,17 +51,32 @@ export interface IWalletConnector {
   on(event: 'accountsChanged'|'chainChanged'|'disconnect', cb: (...args: any[]) => void): () => void
 }
 
-export enum ConnectorType {
-  Injected = 'injected',
-  WalletConnect = 'walletconnect',
-}
+// export enum ConnectorType {
+//   Injected = 'injected',
+//   WalletConnect = 'walletconnect',
+// }
+export const ConnectorType = {
+  Injected: 'injected',
+  WalletConnect: 'walletconnect',
+} as const;
 
-export enum ChainId {
-  BSC = bsc.id,
-  XLAYER = xLayer.id,
-  BSCTEST  = bscTestnet.id,
-  XLAYERTEST = xLayerTestnet.id
-}
+export type ConnectorType = typeof ConnectorType[keyof typeof ConnectorType];
+
+// export enum ChainId {
+//   BSC = bsc.id,
+//   XLAYER = xLayer.id,
+//   BSCTEST  = bscTestnet.id,
+//   XLAYERTEST = xLayerTestnet.id
+// }
+
+export const ChainId = {
+  BSC: bsc.id,
+  XLAYER: xLayer.id,
+  BSCTEST: bscTestnet.id,
+  XLAYERTEST: xLayerTestnet.id,
+} as const;
+
+export type ChainId = typeof ChainId[keyof typeof ChainId];
 
 
 

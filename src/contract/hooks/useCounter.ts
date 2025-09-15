@@ -1,25 +1,22 @@
 import { useCallback } from "react";
-import { ChainId } from "../../wallet/types";
-import { useContract } from "./useContract";
-import { CounterNetworks, CounterAbi } from "../counter";
+import { useCounterContract } from "./useContract";
 import { useAccount } from "../../wallet";
 
 export function useCounter() {
-  const counterContract = useContract(CounterNetworks[ChainId.BSCTEST], CounterAbi)
+  const counterContract = useCounterContract()
   const account = useAccount()
 
   const handleGetX = useCallback(async () => {
     try {
+      console.log(counterContract)
       if (counterContract) {
-        console.log(counterContract)
         // @ts-ignore
         const xValue = await counterContract.read.x()
-        console.log(xValue)
-        return true
+        return xValue
       }
     } catch (error) {
       console.log(error)
-      return 
+      return null
     }
     
     return false
@@ -59,6 +56,6 @@ export function useCounter() {
   return {
     handleGetX,
     handleInc,
-    handleIncBy
+    handleIncBy,
   }
 }

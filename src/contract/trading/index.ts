@@ -2,11 +2,14 @@
 
 import TradingAbi from './abi.json';
 import { ChainId } from '../../wallet/types';
-import { Address } from 'viem';
+import type { Address } from 'viem';
 import { bscContracts } from '../contracts';
 
-const TradingNetworks: {[chainId in ChainId]: Address} = {
-  [ChainId.BSC]: bscContracts.trading
+const TradingNetworks: Record<ChainId, Address> = {
+  [ChainId.BSC]: bscContracts.trading,
+  [ChainId.XLAYER]: bscContracts.trading,
+  [ChainId.BSCTEST]: bscContracts.trading,
+  [ChainId.XLAYERTEST]: bscContracts.trading,
 }
 
 export {

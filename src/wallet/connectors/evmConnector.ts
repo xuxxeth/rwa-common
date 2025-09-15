@@ -122,7 +122,7 @@ export class EvmConnector implements IWalletConnector {
   }
   private getChain(id: number): Chain {
     const chain = this.chains.find(c => c.id === id)
-    if (!chain) throw new Error('Chain not configured: ' + id)
+    if (!chain) throw new Error('Chain not supported:' + id)
     return chain
   }
 
