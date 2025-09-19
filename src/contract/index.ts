@@ -1,5 +1,5 @@
 
-export * from './counter'
-export * from './trading'
+export * from './config/counter'
+export * from './config/trading'
 
 export * from './hooks'

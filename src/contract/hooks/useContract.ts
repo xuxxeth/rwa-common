@@ -1,9 +1,10 @@
 import { useMemo } from "react"
-import { Address, getContract } from "viem"
+import { Address, erc20Abi, getContract } from "viem"
 import { useClient } from "../../wallet/hooks/useClient";
 import { useAccount, useChainId } from "../../wallet";
-import { CounterAbi, CounterNetworks } from "../counter";
+import { CounterAbi, CounterNetworks } from "../config/counter";
 import { getAddress } from "../../utils";
+import { TradingAbi, TradingNetworks } from "../config/trading";
 
 
 export function useContract(address: Address | undefined, abi: any, withSigner = true) {
@@ -22,4 +23,14 @@ export function useCounterContract() {
   const chainId = useChainId()
   const address = chainId ? getAddress(CounterNetworks, chainId)  : undefined
   return useContract(address, CounterAbi)
+}
+
+export function useTadingContract() {
+  const chainId = useChainId()
+  const address = chainId ? getAddress(TradingNetworks, chainId)  : undefined
+  return useContract(address, TradingAbi)
+}
+
+export function useTokenContract(address: Address) {
+  return useContract(address, erc20Abi)
 }

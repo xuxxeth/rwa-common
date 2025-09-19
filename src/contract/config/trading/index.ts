@@ -1,7 +1,7 @@
 
 
 import TradingAbi from './abi.json';
-import { ChainId } from '../../wallet/types';
+import { ChainId } from '../../../wallet/types';
 import type { Address } from 'viem';
 import { bscContracts } from '../contracts';
 

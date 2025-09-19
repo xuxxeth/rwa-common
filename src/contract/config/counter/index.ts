@@ -1,7 +1,7 @@
 
 
 import CounterAbi from './abi.json';
-import { ChainId } from '../../wallet/types';
+import { ChainId } from '../../../wallet/types';
 import { Address } from 'viem';
 import { bscContracts, bscTestContracts, xLayerTestContracts } from '../contracts';
 
