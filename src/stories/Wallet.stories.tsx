@@ -51,16 +51,16 @@ const WalletDemo: React.FC = () => {
   const chainId = useChainId()
   const switchChain = useSwitchChain()
 
-  const { handlePlaceOrder } = useTrading()
+  // const { placeOrder } = useTrading()
   const { publicClient} = useClient()
   const { handleGetX, handleInc, handleIncBy } = useCounter()
 
-  useEffect(() => {
-     publicClient?.getBlockNumber() 
-      .then(res => {
-        console.log(res)
-      })
-  }, [handlePlaceOrder, publicClient])
+  // useEffect(() => {
+  //    publicClient?.getBlockNumber() 
+  //     .then(res => {
+  //       console.log(res)
+  //     })
+  // }, [handlePlaceOrder, publicClient])
 
   const [xValue, setXValue] = useState(0)
   const getX = useCallback(async () => {
