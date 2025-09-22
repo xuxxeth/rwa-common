@@ -32,6 +32,12 @@ export function useApprove(
   const [pending, setPending] = useState<boolean>(false)
   const [isPendingError, setIsPendingError] = useState<boolean>(false)
 
+  const refetchAllowance = useCallback(() => {
+    refetch().then(() => {
+      setPending(false)
+    })
+  }, [refetch])
+
   useEffect(() => {
     refetch().then(() => {
       setPending(false)
@@ -164,6 +170,7 @@ export function useApprove(
     approveNoCheck,
     revokeCallback,
     revokeNoCheck,
+    refetchAllowance,
     currentAllowance,
     isPendingError,
   }

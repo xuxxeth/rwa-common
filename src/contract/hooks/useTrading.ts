@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useTadingContract } from "./useContract";
 import { PlaceOrderProps } from "../types";
 import { useAccount } from "../../wallet";
@@ -14,14 +14,22 @@ export function useTrading(token: Address, spender: Address, amount: BigInt) {
   const account = useAccount()
   const { publicClient } = useClient()
   const { callWithGasPrice } = useCallWithGasPrice()
-  const { approvalState, approveCallback } = useApprove(token, spender, amount)
+  const { approvalState, approveCallback, refetchAllowance } = useApprove(token, spender, amount)
+
   const placeOrder = useCallback(async (params: PlaceOrderProps) => {
     try {
       if (tradingContract && account && publicClient) {
-        console.log(tradingContract)
         if (approvalState !== ApprovalState.APPROVED) {
-          const tx = await approveCallback()
-          console.log(tx)
+          const hash = await approveCallback()
+          console.log(hash)
+          if (!hash) {
+            throw new Error('approve failed') 
+          } 
+          // 等待交易确认
+          const receipt = await waitForTransactionReceipt(publicClient, hash)
+          if (receipt.status === 'success') {
+            refetchAllowance()
+          }
         }
         // @ts-ignore
         const hash = await callWithGasPrice(tradingContract, 'placeOrder', [params])
@@ -29,7 +37,10 @@ export function useTrading(token: Address, spender: Address, amount: BigInt) {
         const receipt = await waitForTransactionReceipt(publicClient, hash)
 
         console.log("交易完成 ✅", receipt)
-        return true
+        return {
+          code: 1,
+          data: receipt
+        }
       }
       return {
         code: -1,
@@ -42,9 +53,20 @@ export function useTrading(token: Address, spender: Address, amount: BigInt) {
         message: error?.toString()
       }
     }
-  }, [tradingContract, account, approvalState, publicClient, approveCallback, callWithGasPrice])
+  }, [
+    tradingContract, 
+    account, 
+    approvalState, 
+    publicClient, 
+    approveCallback, 
+    callWithGasPrice, 
+    refetchAllowance
+  ])
 
   return {
+    approvalState: approvalState,
+    contract: tradingContract,
+    approveCallback,
     placeOrder
   }
 }

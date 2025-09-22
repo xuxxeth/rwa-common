@@ -49,7 +49,7 @@ const TradingDemo: React.FC = () => {
   const chainId = useChainId()
   const switchChain = useSwitchChain()
 
-  const { placeOrder } = useTrading('0xbeD5856646F1faBDFc565F47f8Ea18685466B745', '0x7e688A997E5DF68dF6242BD0d2d9351A4BfBcDe9', BigInt('1000000000'))
+  const { approvalState, placeOrder } = useTrading('0xbeD5856646F1faBDFc565F47f8Ea18685466B745', '0x7e688A997E5DF68dF6242BD0d2d9351A4BfBcDe9', BigInt('1000000000'))
   const { publicClient} = useClient()
 
   useEffect(() => {
@@ -76,7 +76,7 @@ const TradingDemo: React.FC = () => {
     const res = await placeOrder(params)
   }, [placeOrder])
 
-
+  console.log(approvalState)
 
   return (
     <>
