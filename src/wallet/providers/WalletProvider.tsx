@@ -34,12 +34,16 @@ export function WalletProvider({ children, config }: { children: React.ReactNode
   const [chains, setChains] = useState<Chain[]>([])
 
   useEffect(() => {
-    const _config = {...defaultConfig, ...config}
-    evmConnector.current = EvmConnector.getInstance(_config)
-    walletConnectConnector.current = WalletConnectConnector.getInstance(_config)
-    const defaultChainId = storage.getItem(DEFAULT_CHAIN_ID) || _config.defaultChainId
-    setState((s) => ({ ...s, chainId: defaultChainId }))
-    setChains(_config.chains)
+    console.log('WalletProvider config: ', config)
+    if (config?.chains && config?.chains?.length > 0) {
+      const _config = {...defaultConfig, ...config}
+      evmConnector.current = EvmConnector.getInstance(_config)
+      walletConnectConnector.current = WalletConnectConnector.getInstance(_config)
+      const defaultChainId = storage.getItem(DEFAULT_CHAIN_ID) || _config.defaultChainId
+      setState((s) => ({ ...s, chainId: defaultChainId }))
+      setChains(_config.chains)
+    }
+    
   }, [config])
 
 
@@ -140,7 +144,7 @@ export function WalletProvider({ children, config }: { children: React.ReactNode
     
   }, []);
 
-  const value = useMemo<WalletContextValue>(() => ({ connector, state, wallets, connect, disconnect, chains }), [connector, state, connect, disconnect, wallets, ])
+  const value = useMemo<WalletContextValue>(() => ({ connector, state, wallets, chains, connect, disconnect,  }), [connector, state, wallets, chains, connect, disconnect ])
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>
 }
 

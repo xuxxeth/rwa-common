@@ -131,6 +131,87 @@
   {
     "inputs": [
       {
+        "internalType": "Id",
+        "name": "orderId",
+        "type": "uint64"
+      }
+    ],
+    "name": "getOrder",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
+          },
+          {
+            "internalType": "uint32",
+            "name": "stockId",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint64",
+            "name": "amount",
+            "type": "uint64"
+          },
+          {
+            "internalType": "address",
+            "name": "paymentToken",
+            "type": "address"
+          },
+          {
+            "internalType": "uint64",
+            "name": "receivedFee",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint8",
+            "name": "state",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum TradeType",
+            "name": "tradeType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum Side",
+            "name": "side",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint64",
+            "name": "settledAmount",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "settledSize",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "size",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "price",
+            "type": "uint64"
+          }
+        ],
+        "internalType": "struct ITrading.OrderInfo",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "components": [
           {
             "internalType": "uint32",
