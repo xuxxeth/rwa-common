@@ -13,6 +13,7 @@ node_modules
 
 /dist/
 /out/
+storybook-static
 
 # production
 /build
