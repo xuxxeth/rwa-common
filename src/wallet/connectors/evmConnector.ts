@@ -16,7 +16,11 @@ type Listener = (...args: any[]) => void
 
 export class EvmConnector implements IWalletConnector {
   private static instance: EvmConnector | null = null
-
+  private providerHandlers: {
+    accountsChanged?: (accounts: Address[]) => void;
+    chainChanged?: (chainIdHex: string) => void;
+    disconnect?: () => void;
+  } = {};
   public connectorType?: ConnectorType
   public chains: Chain[]
   public defaultChainId: number
@@ -116,7 +120,7 @@ export class EvmConnector implements IWalletConnector {
     return createWalletClient({ chain, transport: custom(this.getProvider() as any) })
   }
 
-  private getProvider(): EIP1193Provider {
+  public getProvider(): EIP1193Provider {
     if (!this.wallet?.provider) throw new Error('No wallet connected')
     return this.wallet.provider
   }
@@ -136,19 +140,45 @@ export class EvmConnector implements IWalletConnector {
     for (const l of this.listeners[event]) l(...args)
   }
   private attachEvents(provider: EIP1193Provider) {
-    provider.on?.('accountsChanged', (accounts: Address[]) => {
+    this.detachEvents(); // 先移除旧的监听
+
+    this.providerHandlers.accountsChanged = (accounts: Address[]) => {
       this.state.accounts = accounts
       this.emit('accountsChanged', accounts)
-    })
-    provider.on?.('chainChanged', (chainIdHex: string) => {
+    };
+
+    this.providerHandlers.chainChanged = (chainIdHex: string) => {
       const id = parseInt(chainIdHex, 16)
       this.state.chainId = id
       this.emit('chainChanged', id)
-      if (this.wallet) this.persist({ walletId: this.wallet.info.uuid, chainId: id, accounts: this.state.accounts })
-    })
-    provider.on?.('disconnect', () => {
+      if (this.wallet) {
+        this.persist({ walletId: this.wallet.info.uuid, chainId: id, accounts: this.state.accounts })
+      }
+    };
+
+    this.providerHandlers.disconnect = () => {
       this.disconnect()
-    })
+    };
+
+    provider.on?.('accountsChanged', this.providerHandlers.accountsChanged!)
+    provider.on?.('chainChanged', this.providerHandlers.chainChanged!)
+    provider.on?.('disconnect', this.providerHandlers.disconnect!)
+  }
+  private detachEvents() {
+    if (!this.wallet?.provider || !this.providerHandlers) return;
+    const provider = this.wallet.provider;
+
+    if (this.providerHandlers.accountsChanged) {
+      provider.removeListener?.('accountsChanged', this.providerHandlers.accountsChanged);
+    }
+    if (this.providerHandlers.chainChanged) {
+      provider.removeListener?.('chainChanged', this.providerHandlers.chainChanged);
+    }
+    if (this.providerHandlers.disconnect) {
+      provider.removeListener?.('disconnect', this.providerHandlers.disconnect);
+    }
+
+    this.providerHandlers = {};
   }
 
   private persist(data: { walletId: string; chainId: number; accounts: Address[] }) {

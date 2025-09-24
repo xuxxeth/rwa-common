@@ -16,3 +16,12 @@ export type {
   IWalletConnector,
 } from './wallet/types';
 
+export type {
+  PlaceOrderProps,
+  SessionType,
+  NetworkFeeType,
+  TradeType,
+  Side,
+  Tif
+} from './contract/types'
+

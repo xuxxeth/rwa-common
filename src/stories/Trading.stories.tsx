@@ -76,7 +76,7 @@ const TradingDemo: React.FC = () => {
     const res = await placeOrder(params)
   }, [placeOrder])
 
-  console.log(approvalState)
+  console.log('approvalState: ', approvalState)
 
   return (
     <>

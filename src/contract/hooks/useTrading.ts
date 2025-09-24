@@ -30,6 +30,8 @@ export function useTrading(token: Address, spender: Address, amount: BigInt) {
           if (receipt.status === 'success') {
             refetchAllowance()
           }
+          console.log('ApprovalState: ', approvalState)
+          return
         }
         // @ts-ignore
         const hash = await callWithGasPrice(tradingContract, 'placeOrder', [params])

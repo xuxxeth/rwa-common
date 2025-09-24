@@ -12,7 +12,7 @@ import { AppKit, CaipNetwork, CaipNetworkId, createAppKit } from '@reown/appkit'
 import { UniversalProvider, IUniversalProvider } from '@walletconnect/universal-provider'
 import { getAppMetadata, getSdkError } from '@walletconnect/utils'
 import { defaultChains } from '../config/chains'
-import type { ConnectorType, IWalletConnector, WalletState } from '../types'
+import type { ConnectorType, EIP1193Provider, IWalletConnector, WalletState } from '../types'
 import { DEFAULT_LOGGER, DEFAULT_PROJECT_ID, DEFAULT_RELAY_URL } from '../config/constants'
 import { getRequiredNamespaces } from '../../helpers/namespaces'
 import { PairingTypes, SessionTypes } from '@walletconnect/types'
@@ -270,9 +270,12 @@ export class WalletConnectConnector implements IWalletConnector {
   }
   getWalletClient(chainId?: number) {
     const chain = this.getChain(chainId ?? this.state.chainId ?? this.defaultChainId)
-    return createWalletClient({ chain, transport: custom(this.provider as any) })
+    if (!this.provider) throw new Error("Provider not initialized")
+    return createWalletClient({ chain, transport: custom(this.provider) })
   }
-
+  public getProvider(): EIP1193Provider | null {
+    return this.provider ?? null 
+  }
   on(event: 'accountsChanged'|'chainChanged'|'disconnect', cb: (...args:any[])=>void) {
     this.listeners[event].push(cb)
     return () => {

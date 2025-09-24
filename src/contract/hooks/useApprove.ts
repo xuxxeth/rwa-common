@@ -129,7 +129,7 @@ export function useApprove(
           return { hash: response }
         })
         .catch((error: any) => {
-          console.error('Failed to approve token', error)
+          console.log('Failed to approve token', error)
           
           throw error
         })

@@ -48,6 +48,7 @@ export interface IWalletConnector {
   getPublicClient(chainId?: number): any
   getWalletClient(chainId?: number): any
   getConnectorType(): ConnectorType | undefined
+  getProvider(): EIP1193Provider | null
   on(event: 'accountsChanged'|'chainChanged'|'disconnect', cb: (...args: any[]) => void): () => void
 }
 
@@ -77,6 +78,8 @@ export const ChainId = {
 } as const;
 
 export type ChainId = typeof ChainId[keyof typeof ChainId];
+
+
 
 
 
