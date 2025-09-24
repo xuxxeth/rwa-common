@@ -57,25 +57,6 @@ export function WalletProvider({ children, config }: { children: React.ReactNode
     // @ts-ignore
     setState({ ...newState });
 
-    // 订阅事件
-    connector?.on("accountsChanged", (accounts) => {
-      setState((s) => ({ ...s, accounts }))
-    }
-      
-    );
-    connector?.on("chainChanged", (chainId) =>
-      {
-        setState((s) => ({ ...s, chainId }))
-        storage.setItem(DEFAULT_CHAIN_ID, chainId)
-      }
-    );
-    connector?.on("disconnect", () => {
-      console.log("EVENT: disconnected");
-      setConnector(null);
-      setState({ accounts: [], chainId: null, connected: false });
-      localStorage.removeItem("ca-wallet:connectorType");
-    });
-
     // 持久化当前选择
     localStorage.setItem("ca-wallet:connectorType", type);
   }, [evmConnector])
@@ -90,15 +71,34 @@ export function WalletProvider({ children, config }: { children: React.ReactNode
     localStorage.removeItem("ca-wallet:connectorType");
   }
 
-  // restore last session
   useEffect(() => {
-    const last = localStorage.getItem("ca-wallet:connectorType") as
-      | ConnectorType
-      | null;
-    if (last && state.wallet) {
-      connect(last, state.wallet).catch(() => {});
+    if (!connector) return
+    // 订阅事件
+    connector?.on("accountsChanged", (accounts) => {
+      setState((s) => ({ ...s, accounts }))
     }
-  }, [state]);
+      
+    );
+    connector?.on("chainChanged", (chainId) =>
+      {
+        setState((s) => ({ ...s, chainId }))
+        storage.setItem(DEFAULT_CHAIN_ID, chainId)
+      }
+    );
+    
+    const handleDisconnect = () => {
+      console.log("EVENT: disconnected")
+      setConnector(null)
+      setState({ accounts: [], chainId: null, connected: false })
+      localStorage.removeItem("ca-wallet:connectorType")
+    }
+
+    const unsubscribe = connector.on("disconnect", handleDisconnect)
+
+    return () => {
+      unsubscribe()  // 组件卸载或 connector 变化时解绑
+    }
+}, [connector])
   // 初始化injected钱包
   useEffect(() => {
     let mounted = true

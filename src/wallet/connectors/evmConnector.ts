@@ -45,6 +45,9 @@ export class EvmConnector implements IWalletConnector {
   }
 
   async connect(wallet: DiscoveredWallet): Promise<WalletState> {
+    if (this.wallet) {
+      await this.disconnect()
+    }
     this.wallet = wallet
     const provider = wallet.provider
     this.attachEvents(provider)
@@ -74,6 +77,10 @@ export class EvmConnector implements IWalletConnector {
   async disconnect(): Promise<void> {
     const prov: any = this.wallet?.provider as any
     if (prov?.disconnect) { try { await prov.disconnect() } catch {} }
+    this.detachEvents(); // 先移除旧的监听
+    // 清空 wallet 和 provider
+    this.wallet = undefined
+
     this.state = { accounts: [], chainId: null, connected: false }
     this.clearPersisted()
     this.emit('disconnect')
@@ -133,8 +140,11 @@ export class EvmConnector implements IWalletConnector {
   on(event: 'accountsChanged'|'chainChanged'|'disconnect', cb: Listener) {
     this.listeners[event].push(cb)
     return () => {
-      this.listeners[event] = this.listeners[event].filter(l => l !== cb)
+      this.off(event, cb)
     }
+  }
+  off(event: 'accountsChanged' | 'chainChanged' | 'disconnect', cb: Listener) {
+    this.listeners[event] = this.listeners[event].filter(l => l !== cb)
   }
   private emit(event: 'accountsChanged'|'chainChanged'|'disconnect', ...args: any[]) {
     for (const l of this.listeners[event]) l(...args)

@@ -84,6 +84,7 @@ export class WalletConnectConnector implements IWalletConnector {
     this.state = { accounts: [], chainId: null, connected: false }
     this.chains = []
     this.relayerRegion = this.conifg .relayUrl
+    this.provider = null
   }
   onSessionConnected(_session: SessionTypes.Struct) {
     const allNamespaceAccounts = Object.values(_session.namespaces)
@@ -177,7 +178,9 @@ export class WalletConnectConnector implements IWalletConnector {
       throw new Error("WalletConnect is not initialized");
     }
     try {
-      
+      if (this.session) {
+        this.disconnect()
+      }
       console.log("connect, pairing topic is:", pairing?.topic);
       const namespacesToRequest = getRequiredNamespaces(this.chains.map(c => `eip155:${c.id}`));
       this.appkit?.open();
@@ -240,6 +243,7 @@ export class WalletConnectConnector implements IWalletConnector {
       topic: this.session.topic,
       reason: getSdkError("USER_DISCONNECTED"),
     });
+    
     // Reset app state after disconnect.
     this.reset();
     this.emit('disconnect')

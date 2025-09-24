@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import { Address, erc20Abi, getContract } from "viem"
 import { useClient } from "../../wallet/hooks/useClient";
-import { useAccount, useChainId } from "../../wallet";
+import { useAccount, useChainId, useChains } from "../../wallet";
 import { CounterAbi, CounterNetworks } from "../config/counter";
 import { getAddress } from "../../utils";
 import { TradingAbi, TradingNetworks } from "../config/trading";
