@@ -89,10 +89,10 @@ export class EvmConnector implements IWalletConnector {
   async switchChain(targetChainId: number): Promise<void> {
     const provider = this.getProvider()
     try {
-      await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x' + targetChainId.toString(16) }] })
+      await provider?.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x' + targetChainId.toString(16) }] })
     } catch (_err) {
       const chain = this.getChain(targetChainId)
-      await provider.request({
+      await provider?.request({
         method: 'wallet_addEthereumChain',
         params: [{
           chainId: '0x' + chain.id.toString(16),
@@ -127,9 +127,9 @@ export class EvmConnector implements IWalletConnector {
     return createWalletClient({ chain, transport: custom(this.getProvider() as any) })
   }
 
-  public getProvider(): EIP1193Provider {
-    if (!this.wallet?.provider) throw new Error('No wallet connected')
-    return this.wallet.provider
+  public getProvider(): EIP1193Provider | null  {
+    if (!this.wallet?.provider) return null
+    return this.wallet.provider ?? null
   }
   private getChain(id: number): Chain {
     const chain = this.chains.find(c => c.id === id)
