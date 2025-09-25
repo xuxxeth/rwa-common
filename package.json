@@ -1,6 +1,6 @@
 {
   "name": "ca-common-web",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "main": "dist/index.umd.js",
   "module": "dist/index.es.js",
   "types": "./dist/types/index.d.ts",
