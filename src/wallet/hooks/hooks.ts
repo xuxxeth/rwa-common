@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
-import type { DiscoveredWallet } from '../providers/eip6963'
 import { useWalletContext } from '../providers/WalletProvider'
-import { ConnectorType } from '../connectors/types'
+import { ConnectorType, DiscoveredWallet } from '../types'
 
 
 export function useConnector() {
@@ -10,6 +9,10 @@ export function useConnector() {
 
 export function useWallets() {
   return useWalletContext().wallets
+}
+
+export function useChains() {
+  return useWalletContext().chains
 }
 
 export function useConnect() {
@@ -42,3 +45,4 @@ export function useSwitchChain() {
     await connector?.switchChain(targetChainId)
   }, [connector])
 }
+

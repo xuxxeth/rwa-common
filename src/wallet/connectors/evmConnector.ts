@@ -7,9 +7,8 @@ import {
   type Address,
   type Chain
 } from 'viem'
-import type { DiscoveredWallet, EIP1193Provider } from '../providers/eip6963'
 import { defaultChains } from '../config/chains'
-import { ConnectorType, ConnectType, IWalletConnector, WalletState } from './types'
+import { ConnectorType, ConnectType, DiscoveredWallet, EIP1193Provider, IWalletConnector, WalletState } from '../types'
 
 const DEFAULT_STORAGE_KEY = 'ca-wallet-sdk:session'
 
@@ -17,7 +16,11 @@ type Listener = (...args: any[]) => void
 
 export class EvmConnector implements IWalletConnector {
   private static instance: EvmConnector | null = null
-
+  private providerHandlers: {
+    accountsChanged?: (accounts: Address[]) => void;
+    chainChanged?: (chainIdHex: string) => void;
+    disconnect?: () => void;
+  } = {};
   public connectorType?: ConnectorType
   public chains: Chain[]
   public defaultChainId: number
@@ -42,6 +45,9 @@ export class EvmConnector implements IWalletConnector {
   }
 
   async connect(wallet: DiscoveredWallet): Promise<WalletState> {
+    if (this.wallet) {
+      await this.disconnect()
+    }
     this.wallet = wallet
     const provider = wallet.provider
     this.attachEvents(provider)
@@ -71,6 +77,10 @@ export class EvmConnector implements IWalletConnector {
   async disconnect(): Promise<void> {
     const prov: any = this.wallet?.provider as any
     if (prov?.disconnect) { try { await prov.disconnect() } catch {} }
+    this.detachEvents(); // 先移除旧的监听
+    // 清空 wallet 和 provider
+    this.wallet = undefined
+
     this.state = { accounts: [], chainId: null, connected: false }
     this.clearPersisted()
     this.emit('disconnect')
@@ -79,10 +89,10 @@ export class EvmConnector implements IWalletConnector {
   async switchChain(targetChainId: number): Promise<void> {
     const provider = this.getProvider()
     try {
-      await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x' + targetChainId.toString(16) }] })
+      await provider?.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x' + targetChainId.toString(16) }] })
     } catch (_err) {
       const chain = this.getChain(targetChainId)
-      await provider.request({
+      await provider?.request({
         method: 'wallet_addEthereumChain',
         params: [{
           chainId: '0x' + chain.id.toString(16),
@@ -117,39 +127,68 @@ export class EvmConnector implements IWalletConnector {
     return createWalletClient({ chain, transport: custom(this.getProvider() as any) })
   }
 
-  private getProvider(): EIP1193Provider {
-    if (!this.wallet?.provider) throw new Error('No wallet connected')
-    return this.wallet.provider
+  public getProvider(): EIP1193Provider | null  {
+    if (!this.wallet?.provider) return null
+    return this.wallet.provider ?? null
   }
   private getChain(id: number): Chain {
     const chain = this.chains.find(c => c.id === id)
-    if (!chain) throw new Error('Chain not configured: ' + id)
+    if (!chain) throw new Error('Chain not supported:' + id)
     return chain
   }
 
   on(event: 'accountsChanged'|'chainChanged'|'disconnect', cb: Listener) {
     this.listeners[event].push(cb)
     return () => {
-      this.listeners[event] = this.listeners[event].filter(l => l !== cb)
+      this.off(event, cb)
     }
+  }
+  off(event: 'accountsChanged' | 'chainChanged' | 'disconnect', cb: Listener) {
+    this.listeners[event] = this.listeners[event].filter(l => l !== cb)
   }
   private emit(event: 'accountsChanged'|'chainChanged'|'disconnect', ...args: any[]) {
     for (const l of this.listeners[event]) l(...args)
   }
   private attachEvents(provider: EIP1193Provider) {
-    provider.on?.('accountsChanged', (accounts: Address[]) => {
+    this.detachEvents(); // 先移除旧的监听
+
+    this.providerHandlers.accountsChanged = (accounts: Address[]) => {
       this.state.accounts = accounts
       this.emit('accountsChanged', accounts)
-    })
-    provider.on?.('chainChanged', (chainIdHex: string) => {
+    };
+
+    this.providerHandlers.chainChanged = (chainIdHex: string) => {
       const id = parseInt(chainIdHex, 16)
       this.state.chainId = id
       this.emit('chainChanged', id)
-      if (this.wallet) this.persist({ walletId: this.wallet.info.uuid, chainId: id, accounts: this.state.accounts })
-    })
-    provider.on?.('disconnect', () => {
+      if (this.wallet) {
+        this.persist({ walletId: this.wallet.info.uuid, chainId: id, accounts: this.state.accounts })
+      }
+    };
+
+    this.providerHandlers.disconnect = () => {
       this.disconnect()
-    })
+    };
+
+    provider.on?.('accountsChanged', this.providerHandlers.accountsChanged!)
+    provider.on?.('chainChanged', this.providerHandlers.chainChanged!)
+    provider.on?.('disconnect', this.providerHandlers.disconnect!)
+  }
+  private detachEvents() {
+    if (!this.wallet?.provider || !this.providerHandlers) return;
+    const provider = this.wallet.provider;
+
+    if (this.providerHandlers.accountsChanged) {
+      provider.removeListener?.('accountsChanged', this.providerHandlers.accountsChanged);
+    }
+    if (this.providerHandlers.chainChanged) {
+      provider.removeListener?.('chainChanged', this.providerHandlers.chainChanged);
+    }
+    if (this.providerHandlers.disconnect) {
+      provider.removeListener?.('disconnect', this.providerHandlers.disconnect);
+    }
+
+    this.providerHandlers = {};
   }
 
   private persist(data: { walletId: string; chainId: number; accounts: Address[] }) {

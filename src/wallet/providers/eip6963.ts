@@ -1,25 +1,5 @@
-// EIP-6963: Multi-injected Provider Discovery
-export type EIP1193Provider = {
-  request(args: { method: string; params?: any[] | object }): Promise<any>
-  on?: (event: string, listener: (...args: any[]) => void) => void
-  removeListener?: (event: string, listener: (...args: any[]) => void) => void
-  isMetaMask?: boolean
-  isOKXWallet?: boolean
-  isCoinbaseWallet?: boolean
-  id?: string
-}
+import { DiscoveredWallet, EIP1193Provider } from "../types"
 
-export type WalletInfo = {
-  uuid: string
-  name: string
-  icon?: string
-  rdns?: string
-}
-
-export type DiscoveredWallet = {
-  info: WalletInfo
-  provider: EIP1193Provider
-}
 
 const discoveredInternal: DiscoveredWallet[] = []
 const subscribers: ((w: DiscoveredWallet) => void)[] = []

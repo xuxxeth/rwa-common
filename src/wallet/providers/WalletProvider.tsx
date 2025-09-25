@@ -1,15 +1,17 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type { Chain, Client } from 'viem'
-import { discoverWallets, type DiscoveredWallet } from './eip6963'
-import { ConnectorType, IWalletConnector, ManagerConfig, WalletState } from '../connectors/types'
-import { DEFAULT_PROJECT_ID, DEFAULT_RELAY_URL } from '../config/constants'
+import { discoverWallets } from './eip6963'
+import { ConnectorType, DiscoveredWallet, IWalletConnector, ManagerConfig, WalletState } from '../types'
+import { DEFAULT_CHAIN_ID, DEFAULT_PROJECT_ID, DEFAULT_RELAY_URL } from '../config/constants'
 import { EvmConnector } from '../connectors/evmConnector'
 import { WalletConnectConnector } from '../connectors/walletConnectConnector'
+import storage from '../../utils/storage'
 
 type WalletContextValue = {
   connector: IWalletConnector | null;
   state: WalletState;
   wallets: DiscoveredWallet[];
+  chains: Chain[];
   connect: (type: ConnectorType, wallet: DiscoveredWallet) => Promise<void>;
   disconnect: () => Promise<void>;
 };
@@ -22,12 +24,6 @@ export function WalletProvider({ children, config }: { children: React.ReactNode
   const evmConnector = useRef<EvmConnector | null>(null)
   const walletConnectConnector = useRef<WalletConnectConnector | null>(null)
 
-  useEffect(() => {
-    const _config = {...defaultConfig, ...config}
-    evmConnector.current = EvmConnector.getInstance(_config)
-    walletConnectConnector.current = WalletConnectConnector.getInstance(_config)
-  }, [config])
-
   const [connector, setConnector] = useState<IWalletConnector | null>(null);
   const [state, setState] = useState<WalletState>({
     accounts: [],
@@ -35,6 +31,21 @@ export function WalletProvider({ children, config }: { children: React.ReactNode
     connected: false,
   });
   const [wallets, setWallets] = useState<DiscoveredWallet[]>([])
+  const [chains, setChains] = useState<Chain[]>([])
+
+  useEffect(() => {
+    console.log('WalletProvider config: ', config)
+    if (config?.chains && config?.chains?.length > 0) {
+      const _config = {...defaultConfig, ...config}
+      evmConnector.current = EvmConnector.getInstance(_config)
+      walletConnectConnector.current = WalletConnectConnector.getInstance(_config)
+      const defaultChainId = storage.getItem(DEFAULT_CHAIN_ID) || _config.defaultChainId
+      setState((s) => ({ ...s, chainId: defaultChainId }))
+      setChains(_config.chains)
+    }
+    
+  }, [config])
+
 
   const connect = useCallback(async (type: ConnectorType, wallet: DiscoveredWallet) => {
     let connector: EvmConnector | WalletConnectConnector | null = evmConnector.current
@@ -45,22 +56,6 @@ export function WalletProvider({ children, config }: { children: React.ReactNode
     setConnector(connector);
     // @ts-ignore
     setState({ ...newState });
-
-    // 订阅事件
-    connector?.on("accountsChanged", (accounts) => {
-      setState((s) => ({ ...s, accounts }))
-    }
-      
-    );
-    connector?.on("chainChanged", (chainId) =>
-      setState((s) => ({ ...s, chainId }))
-    );
-    connector?.on("disconnect", () => {
-      console.log("EVENT: disconnected");
-      setConnector(null);
-      setState({ accounts: [], chainId: null, connected: false });
-      localStorage.removeItem("ca-wallet:connectorType");
-    });
 
     // 持久化当前选择
     localStorage.setItem("ca-wallet:connectorType", type);
@@ -76,15 +71,34 @@ export function WalletProvider({ children, config }: { children: React.ReactNode
     localStorage.removeItem("ca-wallet:connectorType");
   }
 
-  // restore last session
   useEffect(() => {
-    const last = localStorage.getItem("ca-wallet:connectorType") as
-      | ConnectorType
-      | null;
-    if (last && state.wallet) {
-      connect(last, state.wallet).catch(() => {});
+    if (!connector) return
+    // 订阅事件
+    connector?.on("accountsChanged", (accounts) => {
+      setState((s) => ({ ...s, accounts }))
     }
-  }, [state]);
+      
+    );
+    connector?.on("chainChanged", (chainId) =>
+      {
+        setState((s) => ({ ...s, chainId }))
+        storage.setItem(DEFAULT_CHAIN_ID, chainId)
+      }
+    );
+    
+    const handleDisconnect = () => {
+      console.log("EVENT: disconnected")
+      setConnector(null)
+      setState({ accounts: [], chainId: null, connected: false })
+      localStorage.removeItem("ca-wallet:connectorType")
+    }
+
+    const unsubscribe = connector.on("disconnect", handleDisconnect)
+
+    return () => {
+      unsubscribe()  // 组件卸载或 connector 变化时解绑
+    }
+}, [connector])
   // 初始化injected钱包
   useEffect(() => {
     let mounted = true
@@ -130,7 +144,7 @@ export function WalletProvider({ children, config }: { children: React.ReactNode
     
   }, []);
 
-  const value = useMemo<WalletContextValue>(() => ({ connector, state, wallets, connect, disconnect }), [connector, state, connect, disconnect, wallets])
+  const value = useMemo<WalletContextValue>(() => ({ connector, state, wallets, chains, connect, disconnect,  }), [connector, state, wallets, chains, connect, disconnect ])
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>
 }
 

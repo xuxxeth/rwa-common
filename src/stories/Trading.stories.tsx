@@ -1,48 +1,46 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { fn } from 'storybook/test';
 import { Button } from '../components/button';
 import { useAccount, useChainId, useConnect, useDisconnect, useSwitchChain, useWallets } from '../wallet/hooks/hooks';
 import { WalletProvider } from '../wallet/providers/WalletProvider';
-import { bsc, xLayer, xLayerTestnet } from '../wallet/config/chains';
+import {  xLayerTestnet } from '../wallet/config/chains';
 import { ConnectorType } from '../wallet/types';
 import { useTrading } from '../contract/hooks/useTrading';
 import { useCallback, useEffect, useState } from 'react';
 import { useClient } from '../wallet/hooks/useClient';
-import { useCounter } from '../contract/hooks/useCounter';
 import { bscTestnet, x1Testnet } from 'viem/chains';
 
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
-  title: 'Example/Wallet',
+  title: 'Example/Trading',
   parameters: {
     // Optional parameter to center the component in the Canvas. More info: https://storybook.js.org/docs/configure/story-layout
     layout: 'centered',
   },
   // This component will have an automatically generated Autodocs entry: https://storybook.js.org/docs/writing-docs/autodocs
-  tags: ['autodocs'],
+  // tags: ['autodocs'],
   // More on argTypes: https://storybook.js.org/docs/api/argtypes
   argTypes: {
     // backgroundColor: { control: 'color' },
   },
   // Use `fn` to spy on the onClick arg, which will appear in the actions panel once invoked: https://storybook.js.org/docs/essentials/actions#action-args
-  args: { onClick: fn() },
+  // args: { onClick: fn() },
 };
 
 export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const WalletApp: React.FC = () => {
+export const TradingApp: React.FC = () => {
   return (
     <WalletProvider config={{ chains: [bscTestnet, xLayerTestnet], defaultChainId: 97 }}>
-      <WalletDemo />
+      <TradingDemo />
     </WalletProvider>
   )
   
 }
-const WalletDemo: React.FC = () => {
+const TradingDemo: React.FC = () => {
 
   const wallets = useWallets()
   const connect = useConnect()
@@ -51,23 +49,34 @@ const WalletDemo: React.FC = () => {
   const chainId = useChainId()
   const switchChain = useSwitchChain()
 
-  // const { placeOrder } = useTrading()
+  const { approvalState, placeOrder } = useTrading('0xbeD5856646F1faBDFc565F47f8Ea18685466B745', '0x7e688A997E5DF68dF6242BD0d2d9351A4BfBcDe9', BigInt('1000000000'))
   const { publicClient} = useClient()
-  const { handleGetX, handleInc, handleIncBy } = useCounter()
 
-  // useEffect(() => {
-  //    publicClient?.getBlockNumber() 
-  //     .then(res => {
-  //       console.log(res)
-  //     })
-  // }, [handlePlaceOrder, publicClient])
+  useEffect(() => {
+     publicClient?.getBlockNumber() 
+      .then(res => {
+        console.log(res)
+      })
+  }, [publicClient])
 
-  const [xValue, setXValue] = useState(0)
-  const getX = useCallback(async () => {
-    const res = await handleGetX()
-    console.log(res)
-    setXValue(Number(res))
-  }, [handleGetX])
+  const handlePlaceOrder = useCallback(async () => {
+    const params = {
+      stockId: '1',
+      tradeType: '0',
+      side: '0',
+      tif: '1',
+      sessionType: '0',
+      paymentToken: '0xbeD5856646F1faBDFc565F47f8Ea18685466B745', // address
+      validDate: '10', // s
+      networkFee: '30000', // 0.002
+      amount: '10000000', // 10 usdt
+      price: '1000000',   // 1 usdt
+      size: '10000000'    // 10
+    }
+    const res = await placeOrder(params)
+  }, [placeOrder])
+
+  console.log('approvalState: ', approvalState)
 
   return (
     <>
@@ -99,17 +108,11 @@ const WalletDemo: React.FC = () => {
       </div>
 
     </div>
-    <div className=' mt-11'>
-      <Button onClick={() => connect(ConnectorType.WalletConnect, wallets[0] )} label='WalletConnect'></Button>
-      <Button onClick={() => disconnect()} label='disconnectWC'></Button>
-    </div>
+
     <div className='mt-[100px]'>
       <div className='mb-5'>Contract Methods: </div>
       <div className=' flex gap-x-4 items-center'>
-        <Button onClick={() => getX()} label='Get X:'></Button> <span>[ {xValue} ]</span>
-        <Button onClick={() => handleInc()} label='Inc'></Button>
-        <Button onClick={() => handleIncBy('5')} label='IncBy'></Button>
-        {/* <Button onClick={() => handleIncTest()} label='Get X Test'></Button> */}
+        <Button onClick={() => handlePlaceOrder()} label='placeOrder'></Button>
       </div>
     </div>
     </>

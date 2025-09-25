@@ -1,14 +1,15 @@
 {
-  "name": "ca-common-h5",
-  "version": "0.1.0",
+  "name": "ca-common-web",
+  "version": "0.1.15",
   "main": "dist/index.umd.js",
   "module": "dist/index.es.js",
   "types": "./dist/types/index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
+      "types": "./dist/types/index.d.ts",
       "import": "./dist/index.es.js",
-      "require": "./dist/index.umd.js",
-      "default": "./dist/index.es.js"
+      "require": "./dist/index.umd.js"
     }
   },
   "files": [
@@ -18,7 +19,8 @@
     "dev": "vite",
     "build": "vite build --config vite.config.lib.ts",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "serve": "http-server ./storybook-static -p 8080 -P http://localhost:8080?"
   },
   "peerDependencies": {
     "react": ">=18",
@@ -38,6 +40,7 @@
   "dependencies": {
     "@reown/appkit": "^1.8.2",
     "@tailwindcss/vite": "^4.1.12",
+    "@tanstack/react-query": "^5.89.0",
     "@walletconnect/core": "^2.21.8",
     "@walletconnect/types": "^2.21.8",
     "@walletconnect/universal-provider": "^2.21.8",

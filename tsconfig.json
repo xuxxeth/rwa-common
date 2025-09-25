@@ -10,7 +10,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
-    "declarationDir": "dist/types"
+    "declarationDir": "dist/types",
+    "resolveJsonModule": true
   },
-  "include": ["src", ".storybook", "../../Downloads/web-examples-main/advanced/dapps/react-dapp-v2/src/contexts/WalletProvider.tsx", "../../Downloads/web-examples-main/advanced/dapps/react-dapp-v2/src/contexts/WalletProvider2.tsx"]
+  "include": ["src", ".storybook"]
 }
