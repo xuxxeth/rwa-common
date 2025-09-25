@@ -124,6 +124,7 @@ export function WalletProvider({ children, config }: { children: React.ReactNode
       }
     }
     return () => {
+      // @ts-ignore
       clearInterval(interval);
     };
   }, []);

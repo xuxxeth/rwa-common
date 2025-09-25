@@ -1,60 +1,78 @@
-import { decodeErrorResult } from 'viem';
+import {
+  decodeErrorResult,
+  type Abi,
+  type ExtractAbiItemNames,
+  ContractFunctionRevertedError,
+} from 'viem'
 
-// 1️⃣ 自定义错误 ABI 列表
+// 直接把 error signature 列出来，改成 viem 的 ABI 格式
 const errorsAbi = [
-  "error InsufficientBalance(uint256,uint256)",
-  "error Forbidden()",
-  "error AlreadyExecuted()",
-  // 继续添加你的其他 custom error
-];
+  { type: 'error', name: 'AlreadyExecuted', inputs: [] },
+  { type: 'error', name: 'ERC20InsufficientAllowance', inputs: [
+    { name: 'spender', type: 'address' },
+    { name: 'allowance', type: 'uint256' },
+    { name: 'needed', type: 'uint256' },
+  ] },
+  { type: 'error', name: 'Forbidden', inputs: [] },
+  { type: 'error', name: 'InsufficientBalance', inputs: [] },
+  { type: 'error', name: 'InsufficientFee', inputs: [] },
+  { type: 'error', name: 'InsufficientNetworkFee', inputs: [] },
+  { type: 'error', name: 'InvalidAmount', inputs: [] },
+  { type: 'error', name: 'InvalidOrder', inputs: [] },
+  { type: 'error', name: 'InvalidOrderSize', inputs: [] },
+  { type: 'error', name: 'InvalidOrderState', inputs: [] },
+  { type: 'error', name: 'InvalidPrice', inputs: [] },
+  { type: 'error', name: 'InvalidValidDate', inputs: [] },
+  { type: 'error', name: 'NotOwner', inputs: [] },
+  { type: 'error', name: 'OrderNotFound', inputs: [] },
+  { type: 'error', name: 'PauseAction', inputs: [{ name: 'action', type: 'uint256' }] },
+  { type: 'error', name: 'Unauthorized', inputs: [{ name: 'addr', type: 'address' }] },
+  { type: 'error', name: 'UnmatchedArrayLength', inputs: [] },
+  { type: 'error', name: 'UnsupportedMultiNetworkFee', inputs: [] },
+  { type: 'error', name: 'UnsupportedToken', inputs: [{ name: 'token', type: 'address' }] },
+  { type: 'error', name: 'UnsupportedMarketOrder', inputs: [] },
+  { type: 'error', name: 'InvalidAddress', inputs: [{ name: 'addr', type: 'address' }] },
+  { type: 'error', name: 'InitializationFunctionReverted', inputs: [
+    { name: 'addr', type: 'address' },
+    { name: 'data', type: 'bytes' },
+  ] },
+  { type: 'error', name: 'IncorrectFacetCutAction', inputs: [{ name: 'action', type: 'uint8' }] },
+  { type: 'error', name: 'NoSelectorsProvidedForFacetForCut', inputs: [{ name: 'facet', type: 'address' }] },
+  { type: 'error', name: 'RemoveFacetAddressMustBeZeroAddress', inputs: [{ name: 'facet', type: 'address' }] },
+  { type: 'error', name: 'CannotAddFunctionToDiamondThatAlreadyExists', inputs: [{ name: 'selector', type: 'bytes4' }] },
+  { type: 'error', name: 'CannotAddSelectorsToZeroAddress', inputs: [{ name: 'selector', type: 'bytes4' }] },
+  { type: 'error', name: 'CannotRemoveFunctionThatDoesNotExist', inputs: [{ name: 'selector', type: 'bytes4' }] },
+  { type: 'error', name: 'CannotRemoveImmutableFunction', inputs: [{ name: 'selector', type: 'bytes4' }] },
+  { type: 'error', name: 'CannotReplaceImmutableFunction', inputs: [{ name: 'selector', type: 'bytes4' }] },
+  { type: 'error', name: 'CannotReplaceFunctionWithTheSameFunctionFromTheSameFacet', inputs: [{ name: 'selector', type: 'bytes4' }] },
+  { type: 'error', name: 'CannotReplaceFunctionThatDoesNotExists', inputs: [{ name: 'selector', type: 'bytes4' }] },
+  { type: 'error', name: 'CannotReplaceFunctionsFromFacetWithZeroAddress', inputs: [{ name: 'selector', type: 'bytes4' }] },
+  { type: 'error', name: 'NoBytecodeAtAddress', inputs: [
+    { name: 'addr', type: 'address' },
+    { name: 'reason', type: 'string' },
+  ] },
+  { type: 'error', name: 'FunctionNotFound', inputs: [{ name: 'selector', type: 'bytes4' }] },
+] as const satisfies Abi
 
-// 2️⃣ 生成 selector -> ABI Map
-const errorSelectorMap = new Map<string, string>();
-for (const abi of errorsAbi) {
-  // 计算 selector
-  const selector = abiToSelector(abi);
-  errorSelectorMap.set(selector, abi);
-}
-
-// 3️⃣ 工具函数：把 ABI 字符串转 selector（4 字节）
-function abiToSelector(abi: string) {
-  const fnSignature = abi.replace(/^error\s+/, ''); // 去掉 error 前缀
-  // viem 的 encodeSelector 可以做同样事情，这里用简单方法
-  // @ts-ignore
-  return '0x' + Buffer.from(fnSignature).toString('hex').slice(0, 8);
-}
-
-// 4️⃣ 核心函数：从错误字符串解析
-export function parseViemErrorFromString(errorStr: string, rawData?: string) {
-  // 正则匹配 0x 开头的 8 位 hex（4 字节 selector）
-  const regex = /0x[a-fA-F0-9]{8}/g;
-  const matches = errorStr.match(regex);
-
-  if (!matches || matches.length === 0) {
-    console.log('No error signature found in the string.');
-    return;
+export function parseViemError(err: unknown) {
+  if (err instanceof ContractFunctionRevertedError) {
+    // ✅ 这里确保取到的是 string
+    const data = err.data as `0x${string}` | undefined
+    if (data) {
+      try {
+        const decoded = decodeErrorResult({
+          abi: errorsAbi,
+          data, // 必须是 `0x...` 字符串
+        })
+        console.log('Decoded custom error:', decoded.errorName, decoded.args)
+        return decoded
+      } catch (decodeErr) {
+        console.warn('Could not decode custom error data:', data)
+      }
+    }
+    console.log('Reverted reason or built-in error:', err.message)
+  } else {
+    console.error('Non-revert error:', err)
   }
-
-  const signature = matches[0];
-  const abi = errorSelectorMap.get(signature);
-
-  if (!abi) {
-    console.log('Unknown error signature:', signature);
-    console.log('You can look it up here: https://openchain.xyz/signatures?query=' + signature);
-    return;
-  }
-
-  if (!rawData) {
-    console.log('Found error signature:', signature, 'but raw data not provided for decoding.');
-    return;
-  }
-
-  try {
-    // @ts-ignore
-    const decoded = decodeErrorResult({ abi: [abi], data: rawData });
-    console.log('Parsed error name:', abi.split('(')[0]);
-    console.log('Parsed error args:', decoded);
-  } catch (err) {
-    console.log('Failed to decode error data:', err, 'raw data:', rawData);
-  }
+  return null
 }

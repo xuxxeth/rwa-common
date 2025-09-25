@@ -9,12 +9,12 @@ import { useCallWithGasPrice } from "./useCallWithGasPrice";
 import { useClient } from "../../wallet/hooks/useClient";
 
 
-export function useTrading(token: Address, spender: Address, amount: BigInt) {
+export function useTrading(token: Address, amount: BigInt) {
   const tradingContract = useTadingContract()
   const account = useAccount()
   const { publicClient } = useClient()
   const { callWithGasPrice } = useCallWithGasPrice()
-  const { approvalState, approveCallback, refetchAllowance } = useApprove(token, spender, amount)
+  const { approvalState, approveCallback, refetchAllowance, currentAllowance } = useApprove(token, tradingContract?.address, amount)
 
   const placeOrder = useCallback(async (params: PlaceOrderProps, options?: { wait?: boolean}) => {
     try {
@@ -48,7 +48,7 @@ export function useTrading(token: Address, spender: Address, amount: BigInt) {
         console.log("交易完成 ✅", hash)
         return {
           code: 1,
-          data: { hash }
+          data: { transactionHash: hash }
         }
         
       }
@@ -76,6 +76,7 @@ export function useTrading(token: Address, spender: Address, amount: BigInt) {
 
   return {
     approvalState: approvalState,
+    allowance: currentAllowance,
     contract: tradingContract,
     approveCallback,
     placeOrder

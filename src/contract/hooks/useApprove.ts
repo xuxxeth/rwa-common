@@ -15,7 +15,7 @@ export enum ApprovalState {
 
 export function useApprove(
   token: Address,
-  spender: string,
+  spender: string | undefined,
   targetAmount: BigInt
   
 ) {
@@ -33,6 +33,7 @@ export function useApprove(
   const [isPendingError, setIsPendingError] = useState<boolean>(false)
 
   const refetchAllowance = useCallback(() => {
+    setPending(true)
     refetch().then(() => {
       setPending(false)
     })
