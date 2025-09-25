@@ -48,8 +48,9 @@ const TradingDemo: React.FC = () => {
   const account = useAccount()
   const chainId = useChainId()
   const switchChain = useSwitchChain()
+  const [amount, setAmount] = useState('0')
 
-  const { approvalState, placeOrder } = useTrading('0xbeD5856646F1faBDFc565F47f8Ea18685466B745', '0x7e688A997E5DF68dF6242BD0d2d9351A4BfBcDe9', BigInt('1000000000'))
+  const { approvalState, placeOrder } = useTrading('0xbeD5856646F1faBDFc565F47f8Ea18685466B745', '0x7e688A997E5DF68dF6242BD0d2d9351A4BfBcDe9', BigInt(amount))
   const { publicClient} = useClient()
 
   useEffect(() => {
@@ -69,12 +70,12 @@ const TradingDemo: React.FC = () => {
       paymentToken: '0xbeD5856646F1faBDFc565F47f8Ea18685466B745', // address
       validDate: '10', // s
       networkFee: '30000', // 0.002
-      amount: '10000000', // 10 usdt
+      amount: amount, // 10 usdt
       price: '1000000',   // 1 usdt
       size: '10000000'    // 10
     }
-    const res = await placeOrder(params)
-  }, [placeOrder])
+    const res = await placeOrder(params, {wait: true})
+  }, [placeOrder, amount])
 
   console.log('approvalState: ', approvalState)
 
@@ -111,6 +112,14 @@ const TradingDemo: React.FC = () => {
 
     <div className='mt-[100px]'>
       <div className='mb-5'>Contract Methods: </div>
+      <div className='grid gap-x-2'>
+        <div className='flex gap-x-2'>
+          <div>Amount: </div>
+          <input type="text" className='border' value={amount} onChange={e => {
+            setAmount(e.target.value)
+          }} />
+        </div>
+      </div>
       <div className=' flex gap-x-4 items-center'>
         <Button onClick={() => handlePlaceOrder()} label='placeOrder'></Button>
       </div>

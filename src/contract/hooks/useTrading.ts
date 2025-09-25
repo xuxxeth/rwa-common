@@ -16,7 +16,7 @@ export function useTrading(token: Address, spender: Address, amount: BigInt) {
   const { callWithGasPrice } = useCallWithGasPrice()
   const { approvalState, approveCallback, refetchAllowance } = useApprove(token, spender, amount)
 
-  const placeOrder = useCallback(async (params: PlaceOrderProps) => {
+  const placeOrder = useCallback(async (params: PlaceOrderProps, options?: { wait?: boolean}) => {
     try {
       if (tradingContract && account && publicClient) {
         if (approvalState !== ApprovalState.APPROVED) {
@@ -35,21 +35,30 @@ export function useTrading(token: Address, spender: Address, amount: BigInt) {
         }
         // @ts-ignore
         const hash = await callWithGasPrice(tradingContract, 'placeOrder', [params])
-        // 2. 等待交易上链并确认
-        const receipt = await waitForTransactionReceipt(publicClient, hash)
+        if (options?.wait) {
+          // 2. 等待交易上链并确认
+          const receipt = await waitForTransactionReceipt(publicClient, hash)
 
-        console.log("交易完成 ✅", receipt)
+          console.log("交易完成 ✅", receipt)
+          return {
+            code: 1,
+            data: receipt
+          }
+        }
+        console.log("交易完成 ✅", hash)
         return {
           code: 1,
-          data: receipt
+          data: { hash }
         }
+        
       }
       return {
         code: -1,
         message: 'no contract or account'
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log(error)
+      // parseViemErrorFromString(error['cause'].toString())
       return {
         code: -1,
         message: error?.toString()
