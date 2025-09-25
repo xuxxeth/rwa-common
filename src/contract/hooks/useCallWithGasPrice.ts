@@ -34,18 +34,18 @@ export function useCallWithGasPrice(overrideChainId?: number) {
         throw new Error('No valid publicClient')
       }
       const { gas: gas_, skipSimulate, ...overrides_ } = overrides || {}
-      let gas = gas_
-      if (!gas && !skipSimulate) {
-        gas = await publicClient.estimateContractGas({
-          abi: contract.abi,
-          address: contract.address,
-          account: walletClient.account,
-          functionName: methodName,
-          args: methodArgs,
-          value: 0n,
-          ...overrides_,
-        } as unknown as EstimateContractGasParameters)
-      }
+      // let gas = gas_
+      // if (!gas && !skipSimulate) {
+      //   gas = await publicClient.estimateContractGas({
+      //     abi: contract.abi,
+      //     address: contract.address,
+      //     account: walletClient.account,
+      //     functionName: methodName,
+      //     args: methodArgs,
+      //     value: 0n,
+      //     ...overrides_,
+      //   } as unknown as EstimateContractGasParameters)
+      // }
 
       const res = await walletClient.writeContract({
         abi: contract.abi,
@@ -53,9 +53,9 @@ export function useCallWithGasPrice(overrideChainId?: number) {
         account: walletClient.account,
         functionName: methodName,
         args: methodArgs,
-        gasPrice,
+        // gasPrice,
         // for some reason gas price is insamely high when using maxuint approval, so commenting out for now
-        gas: gas ? calculateGasMargin(gas) : undefined,
+        // gas: gas ? calculateGasMargin(gas) : undefined,
         value: 0n,
         ...overrides_,
       } as unknown as WriteContractParameters)
