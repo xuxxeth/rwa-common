@@ -7,6 +7,7 @@ import { Address } from "viem";
 import { waitForTransactionReceipt } from 'viem/actions'
 import { useCallWithGasPrice } from "./useCallWithGasPrice";
 import { useClient } from "../../wallet/hooks/useClient";
+import { parseErrorFromMessage } from "../../utils/parseError";
 
 
 export function useTrading(token: Address, amount: BigInt) {
@@ -57,11 +58,14 @@ export function useTrading(token: Address, amount: BigInt) {
         message: 'no contract or account'
       }
     } catch (error: any) {
-      console.log(error)
+      const errorMessage = parseErrorFromMessage(error)
       // parseViemErrorFromString(error['cause'].toString())
       return {
         code: -1,
-        message: error?.toString()
+        message: {
+          selector: errorMessage?.selector,
+          name: errorMessage?.name
+        }
       }
     }
   }, [

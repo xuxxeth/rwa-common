@@ -1,78 +1,77 @@
-import {
-  decodeErrorResult,
-  type Abi,
-  type ExtractAbiItemNames,
-  ContractFunctionRevertedError,
-} from 'viem'
+import { keccak256, toHex } from "viem"
 
-// 直接把 error signature 列出来，改成 viem 的 ABI 格式
-const errorsAbi = [
-  { type: 'error', name: 'AlreadyExecuted', inputs: [] },
-  { type: 'error', name: 'ERC20InsufficientAllowance', inputs: [
-    { name: 'spender', type: 'address' },
-    { name: 'allowance', type: 'uint256' },
-    { name: 'needed', type: 'uint256' },
-  ] },
-  { type: 'error', name: 'Forbidden', inputs: [] },
-  { type: 'error', name: 'InsufficientBalance', inputs: [] },
-  { type: 'error', name: 'InsufficientFee', inputs: [] },
-  { type: 'error', name: 'InsufficientNetworkFee', inputs: [] },
-  { type: 'error', name: 'InvalidAmount', inputs: [] },
-  { type: 'error', name: 'InvalidOrder', inputs: [] },
-  { type: 'error', name: 'InvalidOrderSize', inputs: [] },
-  { type: 'error', name: 'InvalidOrderState', inputs: [] },
-  { type: 'error', name: 'InvalidPrice', inputs: [] },
-  { type: 'error', name: 'InvalidValidDate', inputs: [] },
-  { type: 'error', name: 'NotOwner', inputs: [] },
-  { type: 'error', name: 'OrderNotFound', inputs: [] },
-  { type: 'error', name: 'PauseAction', inputs: [{ name: 'action', type: 'uint256' }] },
-  { type: 'error', name: 'Unauthorized', inputs: [{ name: 'addr', type: 'address' }] },
-  { type: 'error', name: 'UnmatchedArrayLength', inputs: [] },
-  { type: 'error', name: 'UnsupportedMultiNetworkFee', inputs: [] },
-  { type: 'error', name: 'UnsupportedToken', inputs: [{ name: 'token', type: 'address' }] },
-  { type: 'error', name: 'UnsupportedMarketOrder', inputs: [] },
-  { type: 'error', name: 'InvalidAddress', inputs: [{ name: 'addr', type: 'address' }] },
-  { type: 'error', name: 'InitializationFunctionReverted', inputs: [
-    { name: 'addr', type: 'address' },
-    { name: 'data', type: 'bytes' },
-  ] },
-  { type: 'error', name: 'IncorrectFacetCutAction', inputs: [{ name: 'action', type: 'uint8' }] },
-  { type: 'error', name: 'NoSelectorsProvidedForFacetForCut', inputs: [{ name: 'facet', type: 'address' }] },
-  { type: 'error', name: 'RemoveFacetAddressMustBeZeroAddress', inputs: [{ name: 'facet', type: 'address' }] },
-  { type: 'error', name: 'CannotAddFunctionToDiamondThatAlreadyExists', inputs: [{ name: 'selector', type: 'bytes4' }] },
-  { type: 'error', name: 'CannotAddSelectorsToZeroAddress', inputs: [{ name: 'selector', type: 'bytes4' }] },
-  { type: 'error', name: 'CannotRemoveFunctionThatDoesNotExist', inputs: [{ name: 'selector', type: 'bytes4' }] },
-  { type: 'error', name: 'CannotRemoveImmutableFunction', inputs: [{ name: 'selector', type: 'bytes4' }] },
-  { type: 'error', name: 'CannotReplaceImmutableFunction', inputs: [{ name: 'selector', type: 'bytes4' }] },
-  { type: 'error', name: 'CannotReplaceFunctionWithTheSameFunctionFromTheSameFacet', inputs: [{ name: 'selector', type: 'bytes4' }] },
-  { type: 'error', name: 'CannotReplaceFunctionThatDoesNotExists', inputs: [{ name: 'selector', type: 'bytes4' }] },
-  { type: 'error', name: 'CannotReplaceFunctionsFromFacetWithZeroAddress', inputs: [{ name: 'selector', type: 'bytes4' }] },
-  { type: 'error', name: 'NoBytecodeAtAddress', inputs: [
-    { name: 'addr', type: 'address' },
-    { name: 'reason', type: 'string' },
-  ] },
-  { type: 'error', name: 'FunctionNotFound', inputs: [{ name: 'selector', type: 'bytes4' }] },
-] as const satisfies Abi
+import { errorsList } from "./errors"
 
-export function parseViemError(err: unknown) {
-  if (err instanceof ContractFunctionRevertedError) {
-    // ✅ 这里确保取到的是 string
-    const data = err.data as `0x${string}` | undefined
-    if (data) {
-      try {
-        const decoded = decodeErrorResult({
-          abi: errorsAbi,
-          data, // 必须是 `0x...` 字符串
-        })
-        console.log('Decoded custom error:', decoded.errorName, decoded.args)
-        return decoded
-      } catch (decodeErr) {
-        console.warn('Could not decode custom error data:', data)
-      }
-    }
-    console.log('Reverted reason or built-in error:', err.message)
-  } else {
-    console.error('Non-revert error:', err)
-  }
-  return null
+/**
+ * 规范化参数类型（将 `uint` -> `uint256`，`int` -> `int256`，去掉多余空格等）
+ */
+function canonicalizeParamType(t: string) {
+  t = t.trim();
+  if (t === "uint") return "uint256";
+  if (t === "int") return "int256";
+  // 规范化 `string`/`bytes` 等（通常无需改）
+  // 保持其它类型不变 (address, bytes4, bytes, uint8, uint256, etc.)
+  return t;
 }
+
+function canonicalizeErrorSignature(raw: string) {
+  // 删除前缀 "error "（如果存在）
+  let s = raw.trim();
+  if (s.startsWith("error ")) s = s.slice(6).trim();
+
+  const m = s.match(/^([A-Za-z_][A-Za-z0-9_]*)\((.*)\)$/);
+  if (!m) {
+    throw new Error(`Cannot parse error signature: ${raw}`);
+  }
+  const name = m[1];
+  const argsStr = m[2].trim();
+  const types = argsStr === ""
+    ? []
+    : argsStr.split(",").map(t => canonicalizeParamType(t));
+  return `${name}(${types.join(",")})`;
+}
+
+/**
+ * 计算 error selector：keccak256(canonicalSignature) 的前 4 字节 => hex 0x........
+ * 注意：keccak256 返回的是 hex 字符串，我们直接 slice 前 10 个字符（0x + 8 hex chars）
+ */
+function errorSelectorFromSignature(signature: string) {
+  // signature 应该已经是 canonicalized，如 "PauseAction(uint256)"
+  // keccak256 输入是 raw utf-8 bytes of the signature
+  const hashHex = keccak256(new TextEncoder().encode(signature)); // returns "0x...."
+  // take first 4 bytes -> 8 hex char -> include 0x prefix => slice(0,10)
+  return hashHex.slice(0, 10);
+}
+
+
+function buildErrorSelectorMap(list: string[]) {
+  return list.map(raw => {
+    const canonical = canonicalizeErrorSignature(raw);
+    const selector = errorSelectorFromSignature(canonical);
+    return { raw, canonical, selector };
+  });
+}
+const errorSelectors = buildErrorSelectorMap(errorsList);
+
+export function parseErrorFromMessage(error: any) {
+  const message = error.toString()
+  console.log(message)
+  try {
+    const match = message.match(/0x[0-9a-fA-F]{8}/);
+    if (!match) {
+      return null;
+    }
+    const selector = match[0];
+    const errorSelector = errorSelectors.find(error => error.selector === selector)
+    const name = errorSelector?.canonical ?? "UnknownError";
+    console.log('Error: ', selector, name)
+    return { selector, name };
+  } catch (error) {
+    console.log(message)
+  }
+  
+}
+
+// 运行并打印
+// const table = 
+// console.log(table);
