@@ -25,9 +25,9 @@ export function useCounterContract() {
   return useContract(address, CounterAbi)
 }
 
-export function useTadingContract() {
+export function useTradingContract(trading?: Address) {
   const chainId = useChainId()
-  const address = chainId ? getAddress(TradingNetworks, chainId)  : undefined
+  const address = trading || (chainId ? getAddress(TradingNetworks, chainId) : undefined)
   return useContract(address, TradingAbi)
 }
 

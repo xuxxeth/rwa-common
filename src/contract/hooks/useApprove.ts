@@ -74,11 +74,11 @@ export function useApprove(
         return undefined
       }
 
-      if (!targetAmount) {
-        console.error('missing amount to approve')
-        setIsPendingError(true)
-        return undefined
-      }
+      // if (!targetAmount) {
+      //   console.error('missing amount to approve')
+      //   setIsPendingError(true)
+      //   return undefined
+      // }
 
       if (!spender) {
         console.error('no spender')
@@ -102,7 +102,7 @@ export function useApprove(
           useExact = true
           return tokenContract.estimateGas
             .approve(
-              [spender as Address, targetAmount ?? maxUint256],
+              [spender as Address, maxUint256],
               // @ts-ignore
               {
                 account: tokenContract.address,
@@ -116,8 +116,8 @@ export function useApprove(
         })
 
       if (!estimatedGas) return undefined
-      const finalAmount =
-        overrideAmountApprove ?? targetAmount ?? maxUint256
+      // const finalAmount = overrideAmountApprove ?? targetAmount ?? maxUint256
+      const finalAmount = maxUint256
 
       let sendTxResult: Promise<SendTransactionReturnType> | undefined
       // @ts-ignore

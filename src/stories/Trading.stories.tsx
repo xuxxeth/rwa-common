@@ -4,13 +4,14 @@ import { Button } from '../components/button';
 import { useAccount, useChainId, useConnect, useDisconnect, useSwitchChain, useWallets } from '../wallet/hooks/hooks';
 import { WalletProvider } from '../wallet/providers/WalletProvider';
 import {  xLayerTestnet } from '../wallet/config/chains';
-import { ConnectorType } from '../wallet/types';
+import { ChainId, ConnectorType } from '../wallet/types';
 import { useTrading } from '../contract/hooks/useTrading';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useClient } from '../wallet/hooks/useClient';
 import { bscTestnet, x1Testnet } from 'viem/chains';
 
 import '../utils/parseError'
+import { TradingNetworks, useTradingContract } from '../contract';
 
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
@@ -60,7 +61,7 @@ const TradingDemo: React.FC = () => {
   const payToken = useMemo(() => action === 'buy' ? usdt : applec, [action] )
   const amount = useMemo(() => (BigInt(limitPrice) * BigInt(size)) * BigInt((10 ** 6)), [limitPrice, size])
 
-  const { approvalState, placeOrder, allowance } = useTrading(usdt, BigInt(amount))
+  const { approvalState, placeOrder, allowance } = useTrading(usdt, TradingNetworks[ChainId.BSCTEST], BigInt(amount))
   const { publicClient} = useClient()
 
   useEffect(() => {
@@ -80,10 +81,11 @@ const TradingDemo: React.FC = () => {
       paymentToken: usdt, // address
       validDate: '10', // s
       networkFee: '30000', // 0.002
-      amount: amount.toString(), // 10 usdt
+      amount: '0', // 10 usdt
       price: '10000000',   // 1 usdt
       size: '10000000'    // 10
     }
+    console.log('params: ', params)
     const res = await placeOrder(params, {wait: true})
   }, [placeOrder, amount, payToken, action])
 

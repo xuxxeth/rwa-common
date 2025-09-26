@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { useTadingContract } from "./useContract";
+import { useTradingContract } from "./useContract";
 import { PlaceOrderProps } from "../types";
 import { useAccount } from "../../wallet";
 import { ApprovalState, useApprove } from "./useApprove";
@@ -10,12 +10,12 @@ import { useClient } from "../../wallet/hooks/useClient";
 import { parseErrorFromMessage } from "../../utils/parseError";
 
 
-export function useTrading(token: Address, amount: BigInt) {
-  const tradingContract = useTadingContract()
+export function useTrading(token: Address, spender: Address, amount: BigInt) {
+  const tradingContract = useTradingContract()
   const account = useAccount()
   const { publicClient } = useClient()
   const { callWithGasPrice } = useCallWithGasPrice()
-  const { approvalState, approveCallback, refetchAllowance, currentAllowance } = useApprove(token, tradingContract?.address, amount)
+  const { approvalState, approveCallback, refetchAllowance, currentAllowance } = useApprove(token, spender, amount)
 
   const placeOrder = useCallback(async (params: PlaceOrderProps, options?: { wait?: boolean}) => {
     try {
