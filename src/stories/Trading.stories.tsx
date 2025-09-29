@@ -11,8 +11,9 @@ import { useClient } from '../wallet/hooks/useClient';
 import { bscTestnet, x1Testnet } from 'viem/chains';
 
 import '../utils/parseError'
-import { TradingNetworks, useTradingContract } from '../contract';
-
+import { TradingNetworks } from '../contract';
+import { useSignature } from '../wallet/hooks/useSignature';
+import { useTokenBalances } from '../wallet/index'
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -55,6 +56,9 @@ const TradingDemo: React.FC = () => {
   const [limitPrice, setLimitPrice] = useState('0')
   const [size, setSize] = useState('0')
 
+  const { requestSignature } = useSignature()
+  const { getTokenBalances } = useTokenBalances()
+
   const usdt = '0xbeD5856646F1faBDFc565F47f8Ea18685466B745'
   const applec = '0xE6d44C1f14D98AEf73c822d0319751701D54D4cc'
 
@@ -70,6 +74,16 @@ const TradingDemo: React.FC = () => {
         console.log(res)
       })
   }, [publicClient])
+
+  useEffect(() => {
+    if (account) {
+      getTokenBalances(account, [usdt, applec])
+        .then(res => {
+          console.log(res)
+        })
+    }
+    
+  }, [account, getTokenBalances])
 
   const handlePlaceOrder = useCallback(async () => {
     const params = {
@@ -146,6 +160,14 @@ const TradingDemo: React.FC = () => {
         <Button onClick={() => setAction('buy')} label='Buy'></Button>
         <Button onClick={() => setAction('sell')} label='Sell'></Button>
         <Button onClick={() => handlePlaceOrder()} label='placeOrder'></Button>
+      </div>
+      <div className=' flex'>
+        <Button onClick={() => {
+          requestSignature(1, Math.floor(Date.now() / 1000 + 10 * 60) )
+            .then(res => {
+              console.log(res)
+            })
+        }} label='Signature'></Button>
       </div>
     </div>
     </>
