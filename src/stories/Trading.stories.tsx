@@ -4,12 +4,16 @@ import { Button } from '../components/button';
 import { useAccount, useChainId, useConnect, useDisconnect, useSwitchChain, useWallets } from '../wallet/hooks/hooks';
 import { WalletProvider } from '../wallet/providers/WalletProvider';
 import {  xLayerTestnet } from '../wallet/config/chains';
-import { ConnectorType } from '../wallet/types';
+import { ChainId, ConnectorType } from '../wallet/types';
 import { useTrading } from '../contract/hooks/useTrading';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useClient } from '../wallet/hooks/useClient';
 import { bscTestnet, x1Testnet } from 'viem/chains';
 
+import '../utils/parseError'
+import { TradingNetworks } from '../contract';
+import { useSignature } from '../wallet/hooks/useSignature';
+import { useTokenBalances } from '../wallet/index'
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -48,8 +52,20 @@ const TradingDemo: React.FC = () => {
   const account = useAccount()
   const chainId = useChainId()
   const switchChain = useSwitchChain()
+  const [action, setAction] = useState('buy')
+  const [limitPrice, setLimitPrice] = useState('0')
+  const [size, setSize] = useState('0')
 
-  const { approvalState, placeOrder } = useTrading('0xbeD5856646F1faBDFc565F47f8Ea18685466B745', '0x7e688A997E5DF68dF6242BD0d2d9351A4BfBcDe9', BigInt('1000000000'))
+  const { requestSignature } = useSignature()
+  const { getTokenBalances } = useTokenBalances()
+
+  const usdt = '0xbeD5856646F1faBDFc565F47f8Ea18685466B745'
+  const applec = '0xE6d44C1f14D98AEf73c822d0319751701D54D4cc'
+
+  const payToken = useMemo(() => action === 'buy' ? usdt : applec, [action] )
+  const amount = useMemo(() => (BigInt(limitPrice) * BigInt(size)) * BigInt((10 ** 6)), [limitPrice, size])
+
+  const { approvalState, placeOrder, allowance } = useTrading(usdt, TradingNetworks[ChainId.BSCTEST], BigInt(amount))
   const { publicClient} = useClient()
 
   useEffect(() => {
@@ -59,24 +75,36 @@ const TradingDemo: React.FC = () => {
       })
   }, [publicClient])
 
+  useEffect(() => {
+    if (account) {
+      getTokenBalances(account, [usdt, applec])
+        .then(res => {
+          console.log(res)
+        })
+    }
+    
+  }, [account, getTokenBalances])
+
   const handlePlaceOrder = useCallback(async () => {
     const params = {
       stockId: '1',
       tradeType: '0',
-      side: '0',
+      side: action === 'buy' ? '0' : '1',
       tif: '1',
       sessionType: '0',
-      paymentToken: '0xbeD5856646F1faBDFc565F47f8Ea18685466B745', // address
+      paymentToken: usdt, // address
       validDate: '10', // s
       networkFee: '30000', // 0.002
-      amount: '10000000', // 10 usdt
-      price: '1000000',   // 1 usdt
+      amount: '0', // 10 usdt
+      price: '10000000',   // 1 usdt
       size: '10000000'    // 10
     }
-    const res = await placeOrder(params)
-  }, [placeOrder])
+    console.log('params: ', params)
+    const res = await placeOrder(params, {wait: true})
+  }, [placeOrder, amount, payToken, action])
 
   console.log('approvalState: ', approvalState)
+  console.log('allowance: ', allowance)
 
   return (
     <>
@@ -111,8 +139,35 @@ const TradingDemo: React.FC = () => {
 
     <div className='mt-[100px]'>
       <div className='mb-5'>Contract Methods: </div>
-      <div className=' flex gap-x-4 items-center'>
+      <div className='grid gap-x-2'>
+        <div className='flex gap-x-2'>
+          <div>Limit price: </div>
+          <input type="text" className='border' value={limitPrice} onChange={e => {
+            setLimitPrice(e.target.value)
+          }} />
+        </div>
+        <div className='flex gap-x-2'>
+          <div>Size: </div>
+          <input type="text" className='border' value={size} onChange={e => {
+            setSize(e.target.value)
+          }} />
+        </div>
+        <div>
+          <div>Amount: {amount}</div>
+        </div>
+      </div>
+      <div className=' flex gap-x-4 items-center mt-5'>
+        <Button onClick={() => setAction('buy')} label='Buy'></Button>
+        <Button onClick={() => setAction('sell')} label='Sell'></Button>
         <Button onClick={() => handlePlaceOrder()} label='placeOrder'></Button>
+      </div>
+      <div className=' flex'>
+        <Button onClick={() => {
+          requestSignature(1, Math.floor(Date.now() / 1000 + 10 * 60) )
+            .then(res => {
+              console.log(res)
+            })
+        }} label='Signature'></Button>
       </div>
     </div>
     </>

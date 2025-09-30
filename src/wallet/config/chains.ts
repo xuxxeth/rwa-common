@@ -27,7 +27,13 @@ export const bscTestnet = defineChain({
   },
   blockExplorers: {
     default: { name: 'BscScan', url: 'https://testnet.bscscan.com' }
-  }
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 17422483, // 部署区块高度，随便填也能用，但最好写正确
+    },
+  },
 })
 
 // OKX X Layer

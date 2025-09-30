@@ -14,7 +14,8 @@ export function useClient() {
     if (!chain) return null
     return createPublicClient({ 
       chain: chain,
-      transport: http()
+      transport: http(),
+      
     })
   }, [chainId, chains])
 

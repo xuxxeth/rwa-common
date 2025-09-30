@@ -401,6 +401,7 @@ export function WalletConnectProvider({
       );
     }
     return () => {
+      // @ts-ignore
       clearInterval(interval);
     };
   }, [origin]);

@@ -53,9 +53,9 @@ export function useCallWithGasPrice(overrideChainId?: number) {
         account: walletClient.account,
         functionName: methodName,
         args: methodArgs,
-        gasPrice,
+        // gasPrice,
         // for some reason gas price is insamely high when using maxuint approval, so commenting out for now
-        gas: gas ? calculateGasMargin(gas) : undefined,
+        // gas: gas ? calculateGasMargin(gas) : undefined,
         value: 0n,
         ...overrides_,
       } as unknown as WriteContractParameters)

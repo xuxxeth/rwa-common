@@ -15,7 +15,7 @@ export enum ApprovalState {
 
 export function useApprove(
   token: Address,
-  spender: string,
+  spender: string | undefined,
   targetAmount: BigInt
   
 ) {
@@ -33,6 +33,7 @@ export function useApprove(
   const [isPendingError, setIsPendingError] = useState<boolean>(false)
 
   const refetchAllowance = useCallback(() => {
+    setPending(true)
     refetch().then(() => {
       setPending(false)
     })
@@ -42,7 +43,7 @@ export function useApprove(
     refetch().then(() => {
       setPending(false)
     })
-  }, [pending, refetch])
+  }, [pending, refetch, targetAmount, account])
 
   const approvalState: ApprovalState = useMemo(() => {
     if (!spender) return ApprovalState.UNKNOWN
@@ -54,7 +55,7 @@ export function useApprove(
         ? ApprovalState.PENDING
         : ApprovalState.NOT_APPROVED
       : ApprovalState.APPROVED
-  }, [currentAllowance, pending, spender])
+  }, [currentAllowance, pending, spender, account, targetAmount])
 
   const tokenContract = useTokenContract(token)
 
@@ -73,11 +74,11 @@ export function useApprove(
         return undefined
       }
 
-      if (!targetAmount) {
-        console.error('missing amount to approve')
-        setIsPendingError(true)
-        return undefined
-      }
+      // if (!targetAmount) {
+      //   console.error('missing amount to approve')
+      //   setIsPendingError(true)
+      //   return undefined
+      // }
 
       if (!spender) {
         console.error('no spender')
@@ -101,7 +102,7 @@ export function useApprove(
           useExact = true
           return tokenContract.estimateGas
             .approve(
-              [spender as Address, targetAmount ?? maxUint256],
+              [spender as Address, maxUint256],
               // @ts-ignore
               {
                 account: tokenContract.address,
@@ -115,8 +116,8 @@ export function useApprove(
         })
 
       if (!estimatedGas) return undefined
-      const finalAmount =
-        overrideAmountApprove ?? targetAmount ?? maxUint256
+      // const finalAmount = overrideAmountApprove ?? targetAmount ?? maxUint256
+      const finalAmount = maxUint256
 
       let sendTxResult: Promise<SendTransactionReturnType> | undefined
       // @ts-ignore
