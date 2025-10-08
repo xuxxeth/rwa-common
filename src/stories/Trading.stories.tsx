@@ -163,9 +163,11 @@ const TradingDemo: React.FC = () => {
       </div>
       <div className=' flex'>
         <Button onClick={() => {
-          requestSignature(1, Math.floor(Date.now() / 1000 + 10 * 60) )
+          requestSignature(Math.floor(Date.now() / 1000 + 100 * 60) )
             .then(res => {
               console.log(res)
+              const auth = `Bearer ecdsa-1.${res.account}-${res.nonce}-${res.expires}.${res.signature}`
+              console.log(auth)
             })
         }} label='Signature'></Button>
       </div>
