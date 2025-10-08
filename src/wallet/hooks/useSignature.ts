@@ -52,23 +52,33 @@ export function increaseLocalNonce(chainId: number, account: Hex) {
   setCache(cache)
 }
 
+export async function getNonce(client: { getTransactionCount: (arg0: { address: `0x${string}` }) => any }, address: `0x${string}`) {
+  const nonce = await client.getTransactionCount({
+    address,
+  })
+  console.log("当前 nonce:", nonce)
+  return nonce
+}
+
 
 export function generateSignMessage(nonce: number, expires: number): string {
   return `CyberAlpha Signature Verification\nNonce: ${nonce}\nExpires: ${expires}`
 }
 
 export function useSignature() {
-  const { walletClient } = useClient()
+  const { walletClient, publicClient } = useClient()
   const account = useAccount()
-  const requestSignature = useCallback(async (nonce: number, expires: number) => {
-    if (walletClient && account) {
-      const message = generateSignMessage(nonce, expires)
+  const requestSignature = useCallback(async (expires: number) => {
+    if (walletClient && account && publicClient) {
+      const _nonce = await getNonce(publicClient, account)
+      const message = generateSignMessage(_nonce, expires)
       const signature = await signMessage(walletClient, {
         account,
         message
       })
       return {
-        nonce,
+        account,
+        nonce: _nonce,
         expires,
         message,
         signature
@@ -77,7 +87,7 @@ export function useSignature() {
     } else {
       throw new Error('no walletClient or account')
     }
-  }, [walletClient, account])
+  }, [walletClient, account, publicClient])
 
   return {
     requestSignature
