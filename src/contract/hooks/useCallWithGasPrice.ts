@@ -3,7 +3,6 @@ import type { ContractFunctionArgs, ContractFunctionName, EstimateContractGasPar
 import { Abi, Account, Address, CallParameters, Chain, WriteContractParameters } from 'viem'
 import { useChainId } from '../../wallet'
 import { useClient } from '../../wallet/hooks/useClient'
-import { calculateGasMargin } from '../../utils'
 
 export function useCallWithGasPrice(overrideChainId?: number) {
   const activeChainId = useChainId()

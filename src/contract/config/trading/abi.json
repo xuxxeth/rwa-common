@@ -1,5 +1,58 @@
 [
   {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "code",
+        "type": "uint32"
+      }
+    ],
+    "name": "AppError",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidArgument",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "bits",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "SafeCastOverflowedUintDowncast",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "SafeERC20FailedOperation",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "UnsupportedToken",
+    "type": "error"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -277,30 +330,6 @@
     "name": "placeOrder",
     "outputs": [],
     "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      },
-      {
-        "internalType": "address[]",
-        "name": "tokens",
-        "type": "address[]"
-      }
-    ],
-    "name": "getBalances",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "balances",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   }
 ]

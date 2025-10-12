@@ -11,9 +11,10 @@ import { useClient } from '../wallet/hooks/useClient';
 import { bscTestnet, x1Testnet } from 'viem/chains';
 
 import '../utils/parseError'
-import { TradingNetworks } from '../contract';
+import { TradingNetworks, useTradeUtils } from '../contract';
 import { useSignature } from '../wallet/hooks/useSignature';
 import { useTokenBalances } from '../wallet/index'
+import { parseEther } from 'viem';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -55,18 +56,20 @@ const TradingDemo: React.FC = () => {
   const [action, setAction] = useState('buy')
   const [limitPrice, setLimitPrice] = useState('0')
   const [size, setSize] = useState('0')
+  const [orderId, setOrderId] = useState('29532595632996353')
 
   const { requestSignature } = useSignature()
   const { getTokenBalances } = useTokenBalances()
 
   const usdt = '0xbeD5856646F1faBDFc565F47f8Ea18685466B745'
-  const applec = '0xE6d44C1f14D98AEf73c822d0319751701D54D4cc'
+  const applec = '0x2430341443b0244f94392Be0a024a64aDAa1e114'
 
   const payToken = useMemo(() => action === 'buy' ? usdt : applec, [action] )
   const amount = useMemo(() => (BigInt(limitPrice) * BigInt(size)) * BigInt((10 ** 6)), [limitPrice, size])
 
   const { approvalState, placeOrder, allowance } = useTrading(usdt, TradingNetworks[ChainId.BSCTEST], BigInt(amount))
   const { publicClient} = useClient()
+  const { cancelOrder } = useTradeUtils()
 
   useEffect(() => {
      publicClient?.getBlockNumber() 
@@ -94,13 +97,13 @@ const TradingDemo: React.FC = () => {
       sessionType: '0',
       paymentToken: usdt, // address
       validDate: '10', // s
-      networkFee: '30000', // 0.002
+      networkFee: '0', // 0.002
       amount: '0', // 10 usdt
-      price: '10000000',   // 1 usdt
+      price: '1000000000',   // 1 usdt
       size: '10000000'    // 10
     }
     console.log('params: ', params)
-    const res = await placeOrder(params, {wait: true})
+    const res = await placeOrder(params, {wait: true, value: parseEther('0.0001').toString()})
   }, [placeOrder, amount, payToken, action])
 
   console.log('approvalState: ', approvalState)
@@ -170,6 +173,17 @@ const TradingDemo: React.FC = () => {
               console.log(auth)
             })
         }} label='Signature'></Button>
+      </div>
+      <div className='flex gap-x-2 mt-10'>
+        <div>订单编号: </div>
+        <input type="text" className='border' value={orderId} onChange={e => {
+          setOrderId(e.target.value)
+        }} />
+      </div>
+      <div className=' flex mt-5'>
+        <Button onClick={() => {
+          cancelOrder(Number(orderId), { wait: true })
+        }} label='cancelOrder'></Button>
       </div>
     </div>
     </>
