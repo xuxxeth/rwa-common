@@ -7,7 +7,8 @@ import { Address } from "viem";
 import { waitForTransactionReceipt } from 'viem/actions'
 import { useCallWithGasPrice } from "./useCallWithGasPrice";
 import { useClient } from "../../wallet/hooks/useClient";
-import { parseErrorFromMessage } from "../../utils/parseError";
+import { extractErrorNameAndCode, parseErrorFromMessage } from "../../utils/parseError";
+import { RESPONSE_CODE } from "../../utils/constants";
 
 
 export function useTrading(token: Address, spender: Address, amount: BigInt) {
@@ -42,31 +43,33 @@ export function useTrading(token: Address, spender: Address, amount: BigInt) {
 
           console.log("交易完成 ✅", receipt)
           return {
-            code: 1,
-            data: receipt
-          }
+            code: RESPONSE_CODE.SUCCESS,
+            data: receipt,
+          };
         }
-        console.log("交易完成 ✅", hash)
         return {
-          code: 1,
-          data: { transactionHash: hash }
-        }
+          code: RESPONSE_CODE.SUCCESS,
+          data: { transactionHash: hash },
+        };
         
       }
       return {
-        code: -1,
-        message: 'no contract or account'
-      }
+        code: RESPONSE_CODE.ERROR,
+        data: {
+          errorCode: '-1',
+          message: "no contract or account",
+        }
+      };
     } catch (error: any) {
-      const errorMessage = parseErrorFromMessage(error)
+      const errorMessage = extractErrorNameAndCode(error.toString());
       // parseViemErrorFromString(error['cause'].toString())
       return {
-        code: -1,
-        message: {
-          selector: errorMessage?.selector,
+        code: RESPONSE_CODE.ERROR,
+        data: {
+          errorCode: errorMessage?.code,
           name: errorMessage?.name
         }
-      }
+      };
     }
   }, [
     tradingContract, 

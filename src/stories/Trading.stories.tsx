@@ -104,6 +104,7 @@ const TradingDemo: React.FC = () => {
     }
     console.log('params: ', params)
     const res = await placeOrder(params, {wait: true, value: parseEther('0.0001').toString()})
+    console.log(res)
   }, [placeOrder, amount, payToken, action])
 
   console.log('approvalState: ', approvalState)
@@ -181,8 +182,9 @@ const TradingDemo: React.FC = () => {
         }} />
       </div>
       <div className=' flex mt-5'>
-        <Button onClick={() => {
-          cancelOrder(Number(orderId), { wait: true })
+        <Button onClick={async () => {
+          const res = await cancelOrder(Number(orderId), { wait: true })
+          console.log(res)
         }} label='cancelOrder'></Button>
       </div>
     </div>
