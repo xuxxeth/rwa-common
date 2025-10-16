@@ -7,7 +7,8 @@ import { Address } from "viem";
 import { waitForTransactionReceipt } from 'viem/actions'
 import { useCallWithGasPrice } from "./useCallWithGasPrice";
 import { useClient } from "../../wallet/hooks/useClient";
-import { parseErrorFromMessage } from "../../utils/parseError";
+import { extractErrorNameAndCode, parseErrorFromMessage } from "../../utils/parseError";
+import { RESPONSE_CODE } from "../../utils/constants";
 
 
 export function useTrading(token: Address, spender: Address, amount: BigInt) {
@@ -17,7 +18,7 @@ export function useTrading(token: Address, spender: Address, amount: BigInt) {
   const { callWithGasPrice } = useCallWithGasPrice()
   const { approvalState, approveCallback, refetchAllowance, currentAllowance } = useApprove(token, spender, amount)
 
-  const placeOrder = useCallback(async (params: PlaceOrderProps, options?: { wait?: boolean}) => {
+  const placeOrder = useCallback(async (params: PlaceOrderProps, options?: { wait?: boolean, value?: string}) => {
     try {
       if (tradingContract && account && publicClient) {
         if (approvalState !== ApprovalState.APPROVED) {
@@ -35,38 +36,40 @@ export function useTrading(token: Address, spender: Address, amount: BigInt) {
           return
         }
         // @ts-ignore
-        const hash = await callWithGasPrice(tradingContract, 'placeOrder', [params])
+        const hash = await callWithGasPrice(tradingContract, 'placeOrder', [params], {value: options?.value})
         if (options?.wait) {
           // 2. 等待交易上链并确认
           const receipt = await waitForTransactionReceipt(publicClient, hash)
 
           console.log("交易完成 ✅", receipt)
           return {
-            code: 1,
-            data: receipt
-          }
+            code: RESPONSE_CODE.SUCCESS,
+            data: receipt,
+          };
         }
-        console.log("交易完成 ✅", hash)
         return {
-          code: 1,
-          data: { transactionHash: hash }
-        }
+          code: RESPONSE_CODE.SUCCESS,
+          data: { transactionHash: hash },
+        };
         
       }
       return {
-        code: -1,
-        message: 'no contract or account'
-      }
+        code: RESPONSE_CODE.ERROR,
+        data: {
+          errorCode: '-1',
+          message: "no contract or account",
+        }
+      };
     } catch (error: any) {
-      const errorMessage = parseErrorFromMessage(error)
+      const errorMessage = extractErrorNameAndCode(error.toString());
       // parseViemErrorFromString(error['cause'].toString())
       return {
-        code: -1,
-        message: {
-          selector: errorMessage?.selector,
+        code: RESPONSE_CODE.ERROR,
+        data: {
+          errorCode: errorMessage?.code,
           name: errorMessage?.name
         }
-      }
+      };
     }
   }, [
     tradingContract, 
