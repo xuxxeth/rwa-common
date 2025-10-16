@@ -214,14 +214,14 @@
             "type": "address"
           },
           {
-            "internalType": "uint64",
-            "name": "receivedFee",
-            "type": "uint64"
+            "internalType": "uint48",
+            "name": "size",
+            "type": "uint48"
           },
           {
-            "internalType": "uint8",
-            "name": "state",
-            "type": "uint8"
+            "internalType": "uint48",
+            "name": "price",
+            "type": "uint48"
           },
           {
             "internalType": "enum TradeType",
@@ -234,24 +234,29 @@
             "type": "uint8"
           },
           {
-            "internalType": "uint64",
-            "name": "settledAmount",
-            "type": "uint64"
+            "internalType": "uint8",
+            "name": "state",
+            "type": "uint8"
           },
           {
             "internalType": "uint64",
-            "name": "settledSize",
+            "name": "filledAmount",
             "type": "uint64"
           },
           {
-            "internalType": "uint64",
-            "name": "size",
-            "type": "uint64"
+            "internalType": "uint48",
+            "name": "filledSize",
+            "type": "uint48"
           },
           {
-            "internalType": "uint64",
-            "name": "price",
-            "type": "uint64"
+            "internalType": "uint40",
+            "name": "chargedFees",
+            "type": "uint40"
+          },
+          {
+            "internalType": "uint40",
+            "name": "chargedCommission",
+            "type": "uint40"
           }
         ],
         "internalType": "struct ITrading.OrderInfo",
@@ -312,14 +317,14 @@
             "type": "uint64"
           },
           {
-            "internalType": "uint64",
+            "internalType": "uint48",
             "name": "price",
-            "type": "uint64"
+            "type": "uint48"
           },
           {
-            "internalType": "uint64",
+            "internalType": "uint48",
             "name": "size",
-            "type": "uint64"
+            "type": "uint48"
           }
         ],
         "internalType": "struct ITrading.NewOrder",
