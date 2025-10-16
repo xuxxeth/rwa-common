@@ -1,5 +1,5 @@
 export { Button } from './components/button'
-export { WalletProvider } from './wallet/providers//WalletProvider'
+export { WalletProvider } from './wallet/providers/WalletProvider'
 export * from './wallet'
 export * from './contract'
 

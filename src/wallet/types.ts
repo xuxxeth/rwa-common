@@ -11,8 +11,15 @@ export type EIP1193Provider = {
   id?: string
 }
 
+export interface WalletConfig {
+  info: WalletInfo;
+  detected: boolean;
+  provider?: EIP1193Provider;
+}
+
 export type WalletInfo = {
-  uuid: string
+  // uuid 每次都是监听到的都是变化的, 不能作为唯一标识
+  uuid?: string
   name: string
   icon?: string
   rdns?: string

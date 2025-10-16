@@ -6,11 +6,13 @@ import { DEFAULT_CHAIN_ID, DEFAULT_PROJECT_ID, DEFAULT_RELAY_URL } from '../conf
 import { EvmConnector } from '../connectors/evmConnector'
 import { WalletConnectConnector } from '../connectors/walletConnectConnector'
 import storage from '../../utils/storage'
+import { defaultSupportedWallets, getWalletUniqueKey } from '../config/wallet'
+import type { WalletConfig } from '../types'
 
 type WalletContextValue = {
   connector: IWalletConnector | null;
   state: WalletState;
-  wallets: DiscoveredWallet[];
+  wallets: WalletConfig[];
   chains: Chain[];
   connect: (type: ConnectorType, wallet: DiscoveredWallet) => Promise<void>;
   disconnect: () => Promise<void>;
@@ -30,7 +32,7 @@ export function WalletProvider({ children, config }: { children: React.ReactNode
     chainId: null,
     connected: false,
   });
-  const [wallets, setWallets] = useState<DiscoveredWallet[]>([])
+  const [wallets, setWallets] = useState<WalletConfig[]>(defaultSupportedWallets)
   const [chains, setChains] = useState<Chain[]>([])
 
   useEffect(() => {
@@ -102,10 +104,25 @@ export function WalletProvider({ children, config }: { children: React.ReactNode
   // 初始化injected钱包
   useEffect(() => {
     let mounted = true
-    discoverWallets().then(async (ws) => {
+    discoverWallets().then(async (discoveredWallets) => {
       if (!mounted) return
-      setWallets(ws)
-      
+      // 合并discoveredWallets和defaultSupportedWallets
+      const mergedWallets: WalletConfig[] = defaultSupportedWallets.map((wallet) => {
+        const discoveredWallet = discoveredWallets.find((w) => getWalletUniqueKey(w.info) === getWalletUniqueKey(wallet.info))
+        if(discoveredWallet) {
+          return {
+            ...discoveredWallet,
+            detected: true
+          }
+        }
+        return wallet
+      }).sort((a, b) => {
+        // 已检测的钱包排在前面
+        if(a.detected && !b.detected) return -1
+        if(!a.detected && b.detected) return 1
+        return 0
+      })
+      setWallets(mergedWallets)
     })
     return () => { mounted = false }
   }, [])
