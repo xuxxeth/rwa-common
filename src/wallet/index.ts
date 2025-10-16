@@ -1,5 +1,5 @@
 
-export { WalletProvider } from './providers//WalletProvider'
+export { WalletProvider } from './providers/WalletProvider'
 
 export * from './hooks/hooks'
 export * from './hooks/useClient'

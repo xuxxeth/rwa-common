@@ -53,7 +53,8 @@ export function discoverWallets(timeout = 300): Promise<DiscoveredWallet[]> {
 function dedupe(list: DiscoveredWallet[]) {
   const map = new Map<string, DiscoveredWallet>()
   for (const w of list) {
-    const key = w.info.uuid || w.info.name || w.info.rdns || ''
+    // const key = w.info.uuid || w.info.name || w.info.rdns || ''
+    const key = w.info.rdns || w.info.name
     if (!map.has(key)) map.set(key, w)
   }
   return Array.from(map.values())
