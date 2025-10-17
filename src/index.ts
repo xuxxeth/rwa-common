@@ -3,7 +3,7 @@ export { WalletProvider } from './wallet/providers/WalletProvider'
 export * from './wallet'
 export * from './contract'
 
-export { ConnectorType, ChainId } from './wallet/types';
+export { ConnectorType, ChainId, WalletConfig } from './wallet/types';
 
 // 导出纯类型
 export type {
