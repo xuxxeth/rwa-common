@@ -46,7 +46,7 @@ export interface WalletState {
 export type ConnectType = DiscoveredWallet | { chainId?: number }
 
 export interface IWalletConnector {
-  connect(params: ConnectType): Promise<WalletState>
+  // connect(params: ConnectType): Promise<WalletState>
   disconnect(): Promise<void>
   switchChain(chainId: number): Promise<void>
   getAccount(): Address | null
@@ -57,6 +57,14 @@ export interface IWalletConnector {
   getConnectorType(): ConnectorType | undefined
   getProvider(): EIP1193Provider | null
   on(event: 'accountsChanged'|'chainChanged'|'disconnect', cb: (...args: any[]) => void): () => void
+}
+
+export interface IEvmConnector extends IWalletConnector {
+  connect(wallet?: DiscoveredWallet): Promise<WalletState>
+}
+
+export interface IWalletConnectConnector extends IWalletConnector {
+  connect(pairing?: any): Promise<WalletState>
 }
 
 // export enum ConnectorType {

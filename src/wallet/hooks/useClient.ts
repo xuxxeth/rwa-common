@@ -20,7 +20,8 @@ export function useClient() {
   }, [chainId, chains])
 
   const walletClient = useMemo(() => {
-    if (!chainId || chains.length <= 0 || !connecotr || !connecotr.getProvider()) return null
+    console.log('===>Enter useClient walletClient', chainId, chains, account, connecotr)
+    if (!chainId || chains.length <= 0 || !connecotr || !connecotr.getProvider() || !account) return null
     const chain = chains.find(chain => chain.id === chainId)
     if (!chain) return null
 

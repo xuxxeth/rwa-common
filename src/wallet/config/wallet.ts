@@ -1,4 +1,5 @@
 import type { EIP1193Provider, WalletInfo, WalletConfig } from "../types";
+import { ConnectorType } from '../types'
 
 export function getWalletUniqueKey(info: WalletInfo) {
   // 优先使用 rdns（反向域名）作为唯一标识，因为它是最稳定的
@@ -6,6 +7,13 @@ export function getWalletUniqueKey(info: WalletInfo) {
 }
 
 export const defaultSupportedWallets: WalletConfig[] = [
+  {
+    info: {
+      name: 'WalletConnect',
+      icon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAKKADAAQAAAABAAAAKAAAAAB65masAAAEc0lEQVRYCe1XTYhbVRQ+575k+l46mSQz00qxaNCFFkuxgj9M6WJGsCKdgtKFUkZX0oUVFWmTOqKz0ElmFAqiC3EjVlpxURC6qXWc0qLUTbvxZ6GLgGJh2mbyMyYvP+8dz03mPZOX917f2I3Cu5t77vm598t3zr3nBSAcIQMhAyEDIQP/aQbwdtFp+coEma0diMp9BLgVBAAiXiNq/SbaytXabPLK7ZzxrwAm51aTuiZe4YNngOheXwBEP6MQn0Q248nqkZGbvr4uxg0D3LRQfhWA3kaCpMt+3iqk3wXhu7Vs8mNvp0FLYIBq7loaQP2M87d3cJvgGk7/JTLN5/XjqUKQqEAAh/LVBwSaZzmdafdNsQpgXmXbrwCKwnIaEPYCAcuuoxAxzOm12dEfXa09ykiP7C4SoVionGdw2wYd6IKC0fm/MsPnB23M90L5EMfJWn3YYU+3FPicS2U3Xyly2PqWgRiMLq49qJjGN7zhmIwmhJJow+H6bPLLvt08Ftpi+WUieosZHe+4IK6YJKaa2fhPHiG2OhBA6T30XnGXMMUSH1JhVh4PWkPWSWqudA+nfYnXmontyWZm/BfLtuE5llvZveWjlWFnIIPcqb1z406n3lqrudV09zJZmv5Zyxfvkj79WoDRD2gklrvhLIOO2wCDscXifoPESa6MH+Lx5sHrL21dc27otu4cjLjcsVF9Uj++reDm59TF5/4cb6uxr1m/HaO0r/Z6Sl42e/QB1PI3Jwgil7jKuB/IjkDfq0RPrWZHy3aEi6CeYFaaDI4g3TVTgWUG6f+UxN+vjLcNc4kIdsk4BCpDWzxZfzNxubsPyMbUHTI1JinnLHBSyxd4og7iDMyR521XT9QZnOgBJyMxzactu6VTWuVYB3fOAid13CoTFIVT8Q//6FxGqbMBypQIxBel0jGmNLX8nawThx664JoMzu19RAaJriCH56tbWoaxzOAecuxpENDh6pHtdku0AUrHejbxBT+yM1LsDeSH6pFarfRVIldKWXp/cJYXp9wBUvbxtmjzj8KdthcLDLYiQDzdyCT73tS+GrQC1IXKC0Dmp9a6Z74YiyWmaw19DMwGHwJ399ikWOD0xvk4O0Xr9gIjmFSUqG6Yxrds37GutybTQNzTyvxTe5bBFaA0bsoXpxHwNB+42XKWM/fSK5yGMVdwDAJUFaDZuOBqB9QZ3P29+3F2SoopZmpvjJzt1VuyJ0DpoOXLzzKYUyz6+rG9w5B1awOmn38DlFGBZ/SjSWbVffTVoNNF1iQ/NQdZz3t5jj5w0kt/TSuYwphmugueUcwmPysH/MDJWF+A0qGeSZ0RQhyQRSzXjjEAzrI3j/KXytDQpBtIQiwpBu3Xs6mLlr/XfKvU2XHc8J8jk/gLxP5RnuDsIBY66dYbl7lI7ujqqW0IfLR1LNhfgVsyaB1WP5Y4zYne12VSdgrZzvw7hYyV6Qagx1jkGa9HDHgiKDiO2fjgr5Ipvw8Crx1lV9Hmi3u87KE+ZCBkIGQgZOB/ysDfcRS/QDB3JxEAAAAASUVORK5CYII=",
+    },
+    detected: false
+  },
   {
     info: {
       name: "Binance Wallet",

@@ -69,6 +69,10 @@ export function useSignature() {
   const { walletClient, publicClient } = useClient()
   const account = useAccount()
   const requestSignature = useCallback(async (expires: number) => {
+    console.log('===>Enter requestSignature', expires)
+    console.log('account', account)
+    console.log('walletClient',walletClient)
+    console.log('publicClient',publicClient)
     if (walletClient && account && publicClient) {
       const _nonce = await getNonce(publicClient, account)
       const message = generateSignMessage(_nonce, expires)

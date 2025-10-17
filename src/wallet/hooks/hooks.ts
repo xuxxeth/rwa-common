@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { useWalletContext } from '../providers/WalletProvider'
-import { ConnectorType, DiscoveredWallet } from '../types'
+import { ConnectorType, DiscoveredWallet, WalletConfig } from '../types'
 
 
 export function useConnector() {
@@ -17,7 +17,7 @@ export function useChains() {
 
 export function useConnect() {
   const { connect } = useWalletContext()
-  return useCallback(async (type: ConnectorType, wallet: DiscoveredWallet) => {
+  return useCallback(async (type: ConnectorType, wallet?: WalletConfig) => {
     connect(type, wallet)
   }, [connect])
 }
