@@ -1,24 +1,37 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import type { Chain } from 'viem'
-import { discoverWallets } from './eip6963'
-import { 
-  ConnectorType, 
-  DiscoveredWallet, 
-  IWalletConnector, 
-  ManagerConfig, 
-  WalletState, 
-  WalletConfig 
-} from '../types'
-import { DEFAULT_CHAIN_ID, DEFAULT_PROJECT_ID, DEFAULT_RELAY_URL } from '../config/constants'
-import { EvmConnector } from '../connectors/evmConnector'
-import { WalletConnectConnector } from "../connectors/walletConnectConnector"
-import storage from '../../utils/storage'
-import { defaultSupportedWallets, getWalletUniqueKey } from '../config/wallet'
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import type { Address, Chain } from "viem";
+import { discoverWallets } from "./eip6963";
+import {
+  ConnectorType,
+  DiscoveredWallet,
+  IWalletConnector,
+  ManagerConfig,
+  WalletState,
+  WalletConfig,
+  QrCodeData,
+} from "../types";
+import {
+  DEFAULT_CHAIN_ID,
+  DEFAULT_PROJECT_ID,
+  DEFAULT_RELAY_URL,
+} from "../config/constants";
+import { EvmConnector } from "../connectors/evmConnector";
+import { WalletConnectConnector } from "../connectors/walletConnectConnector";
+import storage from "../../utils/storage";
+import { defaultSupportedWallets, getWalletUniqueKey } from "../config/wallet";
 
 // 类型定义
 type WalletContextValue = {
   connector: IWalletConnector | null;
-  state: WalletState;
+  state: WalletState & { qrCodeData?: QrCodeData };
   wallets: WalletConfig[];
   chains: Chain[];
   connect: (type: ConnectorType, wallet?: WalletConfig) => Promise<void>;
@@ -29,22 +42,24 @@ type WalletContextValue = {
 
 // 默认配置
 export const defaultConfig = {
-  projectId: DEFAULT_PROJECT_ID, 
-  relayUrl: DEFAULT_RELAY_URL, 
-  chains: []
-}
+  projectId: DEFAULT_PROJECT_ID,
+  relayUrl: DEFAULT_RELAY_URL,
+  chains: [],
+};
 
 // 本地存储键名
 const STORAGE_KEYS = {
-  CONNECTOR_TYPE: 'ca-wallet:connectorType',
-  DEFAULT_CHAIN_ID: DEFAULT_CHAIN_ID
+  CONNECTOR_TYPE: "ca-wallet:connectorType",
+  DEFAULT_CHAIN_ID: DEFAULT_CHAIN_ID,
 } as const;
 
 const WalletContext = createContext<WalletContextValue | undefined>(undefined);
 
 // 自定义 Hook：钱包发现和合并
 export function useWalletDiscovery() {
-  const [wallets, setWallets] = useState<WalletConfig[]>(defaultSupportedWallets);
+  const [wallets, setWallets] = useState<WalletConfig[]>(
+    defaultSupportedWallets
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -55,41 +70,48 @@ export function useWalletDiscovery() {
         if (!mounted) return;
 
         // 合并发现的钱包和默认支持的钱包
-        const mergedWallets: WalletConfig[] = defaultSupportedWallets.map((wallet) => {
-          const discoveredWallet = discoveredWallets.find((w) => 
-            getWalletUniqueKey(w.info) === getWalletUniqueKey(wallet.info)
-          );
-          
-          if (discoveredWallet) {
-            return {
-              ...discoveredWallet,
-              detected: true
-            };
-          }
-          return wallet;
-        }).sort((a, b) => {
-          // 已检测的钱包排在前面
-          if (a.detected && !b.detected) return -1;
-          if (!a.detected && b.detected) return 1;
-          return 0;
-        });
+        const mergedWallets: WalletConfig[] = defaultSupportedWallets
+          .map((wallet) => {
+            const discoveredWallet = discoveredWallets.find(
+              (w) =>
+                getWalletUniqueKey(w.info) === getWalletUniqueKey(wallet.info)
+            );
+
+            if (discoveredWallet) {
+              return {
+                ...discoveredWallet,
+                detected: true,
+              };
+            }
+            return wallet;
+          })
+          .sort((a, b) => {
+            // 已检测的钱包排在前面
+            if (a.detected && !b.detected) return -1;
+            if (!a.detected && b.detected) return 1;
+            return 0;
+          });
 
         setWallets(mergedWallets);
       } catch (error) {
-        console.error('Wallet discovery failed:', error);
+        console.error("Wallet discovery failed:", error);
       }
     };
 
     discoverAndMergeWallets();
-    
-    return () => { mounted = false; };
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   return wallets;
 }
 
 // 自定义 Hook：连接器管理
-export function useConnectorManager(config?: ManagerConfig & { chains?: Chain[] }) {
+export function useConnectorManager(
+  config?: ManagerConfig & { chains?: Chain[] }
+) {
   const evmConnector = useRef<EvmConnector | null>(null);
   const walletConnectConnector = useRef<WalletConnectConnector | null>(null);
   const [chains, setChains] = useState<Chain[]>([]);
@@ -97,11 +119,12 @@ export function useConnectorManager(config?: ManagerConfig & { chains?: Chain[] 
   useEffect(() => {
     if (config?.chains && config.chains.length > 0) {
       const mergedConfig = { ...defaultConfig, ...config };
-      
+
       // 初始化连接器实例
       evmConnector.current = EvmConnector.getInstance(mergedConfig);
-      walletConnectConnector.current = WalletConnectConnector.getInstance(mergedConfig);
-      
+      walletConnectConnector.current =
+        WalletConnectConnector.getInstance(mergedConfig);
+
       setChains(mergedConfig.chains);
     }
   }, [config]);
@@ -109,7 +132,7 @@ export function useConnectorManager(config?: ManagerConfig & { chains?: Chain[] 
   return {
     evmConnector: evmConnector.current,
     walletConnectConnector: walletConnectConnector.current,
-    chains
+    chains,
   };
 }
 
@@ -128,12 +151,12 @@ export function useConnectionState() {
   useEffect(() => {
     if (!connector) return;
 
-    const handleAccountsChanged = (accounts: string[]) => {
-      setState(prev => ({ ...prev, accounts }));
+    const handleAccountsChanged = (accounts: Address[]) => {
+      setState((prev) => ({ ...prev, accounts }));
     };
 
     const handleChainChanged = (chainId: number) => {
-      setState(prev => ({ ...prev, chainId }));
+      setState((prev) => ({ ...prev, chainId }));
       storage.setItem(STORAGE_KEYS.DEFAULT_CHAIN_ID, chainId);
     };
 
@@ -145,7 +168,10 @@ export function useConnectionState() {
     };
 
     // 订阅事件
-    const unsubscribeAccounts = connector.on("accountsChanged", handleAccountsChanged);
+    const unsubscribeAccounts = connector.on(
+      "accountsChanged",
+      handleAccountsChanged
+    );
     const unsubscribeChain = connector.on("chainChanged", handleChainChanged);
     const unsubscribeDisconnect = connector.on("disconnect", handleDisconnect);
 
@@ -164,20 +190,21 @@ export function useConnectionState() {
     setConnector,
     setState,
     setIsConnecting,
-    setError
+    setError,
   };
 }
 
-export function WalletProvider({ 
-  children, 
-  config
-}: { 
-  children: React.ReactNode; 
-  config?: ManagerConfig & { chains?: Chain[] } 
+export function WalletProvider({
+  children,
+  config,
+}: {
+  children: React.ReactNode;
+  config?: ManagerConfig & { chains?: Chain[] };
 }) {
   // 使用自定义 Hook 管理不同关注点
   const wallets = useWalletDiscovery();
-  const { evmConnector, walletConnectConnector, chains } = useConnectorManager(config);
+  const { evmConnector, walletConnectConnector, chains } =
+    useConnectorManager(config);
   const {
     connector,
     state,
@@ -186,66 +213,75 @@ export function WalletProvider({
     setConnector,
     setState,
     setIsConnecting,
-    setError
+    setError,
   } = useConnectionState();
 
   // 连接钱包
-  const connect = useCallback(async (type: ConnectorType, wallet?: WalletConfig) => {
-    try {
-      setIsConnecting(true);
-      setError(null);
+  const connect = useCallback(
+    async (type: ConnectorType, wallet?: WalletConfig) => {
+      debugger;
+      try {
+        // TODO: IsConnecting 对 walletConnect 来说应该定义成什么样子?
+        setIsConnecting(true);
+        setError(null);
 
-      let activeConnector: IWalletConnector | null = null;
-      let connectionResult: WalletState;
+        let activeConnector: IWalletConnector | null = null;
+        let connectionResult: WalletState;
 
-      switch (type) {
-        case ConnectorType.Injected:
-          if (!evmConnector || !wallet) {
-            throw new Error('Injected wallet connector or wallet config is required');
-          }
-          activeConnector = evmConnector;
-          connectionResult = await evmConnector.connect(wallet as DiscoveredWallet);
-          break;
+        switch (type) {
+          case ConnectorType.Injected:
+            if (!evmConnector || !wallet) {
+              throw new Error(
+                "Injected wallet connector or wallet config is required"
+              );
+            }
+            activeConnector = evmConnector;
+            connectionResult = await evmConnector.connect(
+              wallet as DiscoveredWallet
+            );
+            break;
 
-        case ConnectorType.WalletConnect:
-          if (!walletConnectConnector) {
-            throw new Error('WalletConnect connector is not initialized');
-          }
-          activeConnector = walletConnectConnector;
-          connectionResult = await walletConnectConnector.connect();
-          break;
+          case ConnectorType.WalletConnect:
+            if (!walletConnectConnector) {
+              throw new Error("WalletConnect connector is not initialized");
+            }
+            activeConnector = walletConnectConnector;
+            connectionResult = await walletConnectConnector.connect();
+            break;
 
-        default:
-          throw new Error(`Unsupported connector type: ${type}`);
+          default:
+            throw new Error(`Unsupported connector type: ${type}`);
+        }
+
+        setConnector(activeConnector);
+        setState(connectionResult);
+
+        // 持久化连接类型
+        localStorage.setItem(STORAGE_KEYS.CONNECTOR_TYPE, type);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Connection failed";
+        setError(errorMessage);
+        console.error("Wallet connection failed:", err);
+        throw err;
+      } finally {
+        debugger
+        setIsConnecting(false);
       }
-
-      setConnector(activeConnector);
-      setState(connectionResult);
-      
-      // 持久化连接类型
-      localStorage.setItem(STORAGE_KEYS.CONNECTOR_TYPE, type);
-      
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Connection failed';
-      setError(errorMessage);
-      console.error('Wallet connection failed:', err);
-      throw err;
-    } finally {
-      setIsConnecting(false);
-    }
-  }, [evmConnector, walletConnectConnector]);
+    },
+    [evmConnector, walletConnectConnector]
+  );
 
   // 断开连接
   const disconnect = useCallback(async () => {
-    debugger
     try {
       if (connector) {
         await connector.disconnect();
       }
       // 状态会在事件监听器中自动更新
     } catch (err) {
-      console.error('Wallet disconnection failed:', err);
-      setError('Disconnection failed');
+      console.error("Wallet disconnection failed:", err);
+      setError("Disconnection failed");
     }
   }, [connector]);
 
@@ -254,21 +290,33 @@ export function WalletProvider({
     if (config?.defaultChainId) {
       const storedChainId = storage.getItem(STORAGE_KEYS.DEFAULT_CHAIN_ID);
       const defaultChainId = storedChainId || config.defaultChainId;
-      setState(prev => ({ ...prev, chainId: defaultChainId }));
+      setState((prev) => ({ ...prev, chainId: defaultChainId }));
     }
   }, [config?.defaultChainId]);
 
   // 构建上下文值
-  const contextValue = useMemo<WalletContextValue>(() => ({
-    connector,
-    state,
-    wallets,
-    chains,
-    connect,
-    disconnect,
-    isConnecting,
-    error
-  }), [connector, state, wallets, chains, connect, disconnect, isConnecting, error]);
+  const contextValue = useMemo<WalletContextValue>(
+    () => ({
+      connector,
+      state,
+      wallets,
+      chains,
+      connect,
+      disconnect,
+      isConnecting,
+      error,
+    }),
+    [
+      connector,
+      state,
+      wallets,
+      chains,
+      connect,
+      disconnect,
+      isConnecting,
+      error,
+    ]
+  );
 
   return (
     <WalletContext.Provider value={contextValue}>
@@ -280,7 +328,7 @@ export function WalletProvider({
 export function useWalletContext() {
   const context = useContext(WalletContext);
   if (!context) {
-    throw new Error('useWalletContext must be used within a WalletProvider');
+    throw new Error("useWalletContext must be used within a WalletProvider");
   }
   return context;
 }

@@ -6,31 +6,31 @@ export function useClient() {
   const chainId = useChainId()
   const chains = useChains()
   const account = useAccount()
-  const connecotr = useConnector()
+  const connector = useConnector()
 
   const publicClient = useMemo(() => {
-    if (!chainId || chains.length <= 0) return null
+    if (!chainId || chains.length <= 0 || !connector || !connector.getProvider()) return null
     const chain = chains.find(chain => chain.id === chainId)
     if (!chain) return null
+    console.log('===> publicClient chain', chain)
     return createPublicClient({ 
       chain: chain,
-      transport: http(),
-      
+      // transport: http(),
+      transport: custom(connector.getProvider()!),
     })
-  }, [chainId, chains])
+  }, [chainId, chains, connector])
 
   const walletClient = useMemo(() => {
-    console.log('===>Enter useClient walletClient', chainId, chains, account, connecotr)
-    if (!chainId || chains.length <= 0 || !connecotr || !connecotr.getProvider() || !account) return null
+    if (!chainId || chains.length <= 0 || !connector || !connector.getProvider() || !account) return null
     const chain = chains.find(chain => chain.id === chainId)
     if (!chain) return null
 
     return createWalletClient({ 
       chain: chain,
-      transport: custom(connecotr.getProvider()!),
+      transport: custom(connector.getProvider()!),
       account
     })
-  }, [chainId, chains, account, connecotr])
+  }, [chainId, chains, account, connector])
 
   return {
     publicClient,

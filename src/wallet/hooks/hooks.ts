@@ -25,6 +25,7 @@ export function useConnect() {
 export function useDisconnect() {
   const { disconnect } = useWalletContext()
   return useCallback(async () => {
+    console.log('====> useDisconnect disconnecting...')
     disconnect()
   }, [disconnect])
 }
@@ -32,6 +33,11 @@ export function useDisconnect() {
 export function useAccount() {
   const { state } = useWalletContext()
   return state.accounts[0]
+}
+
+export function useQrCodeData() {
+  const { state } = useWalletContext()
+  return state.qrCodeData
 }
 
 export function useChainId() {
@@ -44,5 +50,10 @@ export function useSwitchChain() {
   return useCallback(async (targetChainId: number) => {
     await connector?.switchChain(targetChainId)
   }, [connector])
+}
+
+export function useIsConnecting() {
+  const { isConnecting } = useWalletContext()
+  return isConnecting
 }
 

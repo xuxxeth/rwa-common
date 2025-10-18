@@ -41,6 +41,12 @@ export interface WalletState {
   chainId: number | null
   connected: boolean
   wallet?: DiscoveredWallet
+  qrCodeData?: QrCodeData
+}
+
+export interface QrCodeData {
+  uri: string
+  dataUrl: string
 }
 
 export type ConnectType = DiscoveredWallet | { chainId?: number }
@@ -60,11 +66,11 @@ export interface IWalletConnector {
 }
 
 export interface IEvmConnector extends IWalletConnector {
-  connect(wallet?: DiscoveredWallet): Promise<WalletState>
+  connect(wallet?: DiscoveredWallet): Promise<WalletState & { qrCodeData?: QrCodeData }>
 }
 
 export interface IWalletConnectConnector extends IWalletConnector {
-  connect(pairing?: any): Promise<WalletState>
+  connect(pairing?: any): Promise<WalletState & { qrCodeData?: QrCodeData }>
 }
 
 // export enum ConnectorType {

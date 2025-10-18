@@ -106,6 +106,7 @@ export class EvmConnector implements IEvmConnector {
 
   // 断开连接
   async disconnect(): Promise<void> {
+    console.log('===> EvmConnector disconnecting...');
     try {
       // 尝试调用钱包的断开连接方法
       const provider = this.wallet?.provider as any;
@@ -139,7 +140,7 @@ export class EvmConnector implements IEvmConnector {
     } catch (error: any) {
       // 如果链不存在，尝试添加链
       if (error.code === 4902) {
-        await this.addChain(targetChainId);
+        // await this.addChain(targetChainId);
       } else {
         throw error;
       }
@@ -233,27 +234,28 @@ export class EvmConnector implements IEvmConnector {
     return parseInt(chainIdHex, 16);
   }
 
-  private async addChain(targetChainId: number): Promise<void> {
-    const provider = this.getProvider();
-    if (!provider) return;
+  // 不自动添加链(之后去掉)
+  // private async addChain(targetChainId: number): Promise<void> {
+  //   const provider = this.getProvider();
+  //   if (!provider) return;
 
-    const chain = this.getChain(targetChainId);
-    await provider.request({
-      method: "wallet_addEthereumChain",
-      params: [
-        {
-          chainId: `0x${chain.id.toString(16)}`,
-          chainName: chain.name,
-          nativeCurrency: chain.nativeCurrency ?? {
-            name: "ETH",
-            symbol: "ETH",
-            decimals: 18,
-          },
-          rpcUrls: chain.rpcUrls.default.http,
-        },
-      ],
-    });
-  }
+  //   const chain = this.getChain(targetChainId);
+  //   await provider.request({
+  //     method: "wallet_addEthereumChain",
+  //     params: [
+  //       {
+  //         chainId: `0x${chain.id.toString(16)}`,
+  //         chainName: chain.name,
+  //         nativeCurrency: chain.nativeCurrency ?? {
+  //           name: "ETH",
+  //           symbol: "ETH",
+  //           decimals: 18,
+  //         },
+  //         rpcUrls: chain.rpcUrls.default.http,
+  //       },
+  //     ],
+  //   });
+  // }
 
   private getChain(id: number): Chain {
     const chain = this.chains.find((c) => c.id === id);
