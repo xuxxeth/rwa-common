@@ -31,7 +31,7 @@ import { defaultSupportedWallets, getWalletUniqueKey } from "../config/wallet";
 // 类型定义
 type WalletContextValue = {
   connector: IWalletConnector | null;
-  state: WalletState & { qrCodeData?: QrCodeData };
+  state: WalletState;
   wallets: WalletConfig[];
   chains: Chain[];
   connect: (type: ConnectorType, wallet?: WalletConfig) => Promise<void>;
@@ -221,7 +221,6 @@ export function WalletProvider({
     async (type: ConnectorType, wallet?: WalletConfig) => {
       debugger;
       try {
-        // TODO: IsConnecting 对 walletConnect 来说应该定义成什么样子?
         setIsConnecting(true);
         setError(null);
 
@@ -236,6 +235,7 @@ export function WalletProvider({
               );
             }
             activeConnector = evmConnector;
+            setConnector(activeConnector);
             connectionResult = await evmConnector.connect(
               wallet as DiscoveredWallet
             );
@@ -246,14 +246,14 @@ export function WalletProvider({
               throw new Error("WalletConnect connector is not initialized");
             }
             activeConnector = walletConnectConnector;
-            connectionResult = await walletConnectConnector.connect();
+            setConnector(activeConnector);
+            connectionResult = await walletConnectConnector.connect(wallet);
             break;
 
           default:
             throw new Error(`Unsupported connector type: ${type}`);
         }
 
-        setConnector(activeConnector);
         setState(connectionResult);
 
         // 持久化连接类型
@@ -265,7 +265,7 @@ export function WalletProvider({
         console.error("Wallet connection failed:", err);
         throw err;
       } finally {
-        debugger
+        debugger;
         setIsConnecting(false);
       }
     },

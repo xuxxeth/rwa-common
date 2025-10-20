@@ -41,16 +41,15 @@
     "@reown/appkit": "^1.8.2",
     "@tailwindcss/vite": "^4.1.12",
     "@tanstack/react-query": "^5.89.0",
-    "@types/qrcode": "^1.5.5",
     "@walletconnect/core": "^2.21.8",
+    "@walletconnect/ethereum-provider": "^2.22.4",
     "@walletconnect/types": "^2.21.8",
-    "@walletconnect/universal-provider": "^2.21.8",
     "@walletconnect/utils": "^2.21.8",
     "autoprefixer": "^10.4.21",
     "ca-common-web": "link:",
     "ethers": "^6.15.0",
     "postcss": "^8.5.6",
-    "qrcode": "^1.5.4",
+    "qr-code-styling": "^1.9.2",
     "tailwindcss": "^3.4.17",
     "viem": "^2.37.0"
   }

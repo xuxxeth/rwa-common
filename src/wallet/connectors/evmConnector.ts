@@ -38,15 +38,15 @@ interface PersistedData {
 export class EvmConnector implements IEvmConnector {
   // 单例模式
   private static instance: EvmConnector | null = null;
-  
+
   // 公共属性
-  public connectorType: ConnectorType = 'injected';
+  public connectorType: ConnectorType = "injected";
   public chains: Chain[];
   public defaultChainId: number;
-  public state: WalletState = { 
-    accounts: [], 
-    chainId: null, 
-    connected: false 
+  public state: WalletState = {
+    accounts: [],
+    chainId: null,
+    connected: false,
   };
 
   // 私有属性
@@ -55,12 +55,12 @@ export class EvmConnector implements IEvmConnector {
   private providerHandlers: Record<EventType, Listener | null> = {
     accountsChanged: null,
     chainChanged: null,
-    disconnect: null
+    disconnect: null,
   };
   private listeners: Record<EventType, Listener[]> = {
     accountsChanged: [],
     chainChanged: [],
-    disconnect: []
+    disconnect: [],
   };
 
   private constructor(config: EvmConnectorConfig = {}) {
@@ -99,14 +99,14 @@ export class EvmConnector implements IEvmConnector {
 
       return this.state;
     } catch (error) {
-      console.error('EvmConnector connection failed:', error);
+      console.error("EvmConnector connection failed:", error);
       throw error;
     }
   }
 
   // 断开连接
   async disconnect(): Promise<void> {
-    console.log('===> EvmConnector disconnecting...');
+    console.log("===> EvmConnector disconnecting...");
     try {
       // 尝试调用钱包的断开连接方法
       const provider = this.wallet?.provider as any;
@@ -114,7 +114,7 @@ export class EvmConnector implements IEvmConnector {
         await provider.disconnect();
       }
     } catch (error) {
-      console.warn('Error during provider disconnect:', error);
+      console.warn("Error during provider disconnect:", error);
     }
 
     this.detachEvents();
@@ -128,7 +128,7 @@ export class EvmConnector implements IEvmConnector {
   async switchChain(targetChainId: number): Promise<void> {
     const provider = this.getProvider();
     if (!provider) {
-      throw new Error('Provider not available');
+      throw new Error("Provider not available");
     }
 
     try {
@@ -177,9 +177,9 @@ export class EvmConnector implements IEvmConnector {
     const targetChainId = chainId ?? this.state.chainId ?? this.defaultChainId;
     const chain = this.getChain(targetChainId);
     const provider = this.getProvider();
-    
+
     if (!provider) {
-      throw new Error('Provider not available');
+      throw new Error("Provider not available");
     }
 
     return createWalletClient({
@@ -212,11 +212,11 @@ export class EvmConnector implements IEvmConnector {
   // 私有方法
   private async requestAccounts(provider: EIP1193Provider): Promise<Address[]> {
     try {
-      const accounts = await provider.request({
+      const accounts = (await provider.request({
         method: "eth_requestAccounts",
-      }) as Address[];
+      })) as Address[];
 
-      console.log('Accounts obtained:', accounts);
+      console.log("Accounts obtained:", accounts);
       return accounts;
     } catch (error: any) {
       if (error.code === USER_REJECTED_ERROR_CODE) {
@@ -228,9 +228,9 @@ export class EvmConnector implements IEvmConnector {
   }
 
   private async getCurrentChainId(provider: EIP1193Provider): Promise<number> {
-    const chainIdHex = await provider.request({
+    const chainIdHex = (await provider.request({
       method: "eth_chainId",
-    }) as string;
+    })) as string;
     return parseInt(chainIdHex, 16);
   }
 
@@ -310,7 +310,7 @@ export class EvmConnector implements IEvmConnector {
     this.providerHandlers = {
       accountsChanged: null,
       chainChanged: null,
-      disconnect: null
+      disconnect: null,
     };
   }
 
@@ -322,7 +322,7 @@ export class EvmConnector implements IEvmConnector {
     if (!this.wallet) return;
 
     const data: PersistedData = {
-      walletId: this.wallet.info.uuid || '',
+      walletId: this.wallet.info.uuid || "",
       chainId: this.state.chainId!,
       accounts: this.state.accounts,
     };
@@ -334,7 +334,7 @@ export class EvmConnector implements IEvmConnector {
     try {
       localStorage.setItem(this.storageKey, JSON.stringify(data));
     } catch (error) {
-      console.warn('Failed to persist data:', error);
+      console.warn("Failed to persist data:", error);
     }
   }
 
@@ -342,7 +342,7 @@ export class EvmConnector implements IEvmConnector {
     try {
       localStorage.removeItem(this.storageKey);
     } catch (error) {
-      console.warn('Failed to clear persisted data:', error);
+      console.warn("Failed to clear persisted data:", error);
     }
   }
 }

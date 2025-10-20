@@ -12,13 +12,13 @@ export function useClient() {
     if (!chainId || chains.length <= 0 || !connector || !connector.getProvider()) return null
     const chain = chains.find(chain => chain.id === chainId)
     if (!chain) return null
-    console.log('===> publicClient chain', chain)
     return createPublicClient({ 
       chain: chain,
       // transport: http(),
       transport: custom(connector.getProvider()!),
     })
-  }, [chainId, chains, connector])
+  // 使用 walletConnect 的时候，只有 account 有值了，provider 才可以使用
+  }, [chainId, account, chains, connector])
 
   const walletClient = useMemo(() => {
     if (!chainId || chains.length <= 0 || !connector || !connector.getProvider() || !account) return null

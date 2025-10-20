@@ -29,6 +29,7 @@ export function useTokenBalances() {
           return [];
         }
       }
+      console.log('Enter No publicClient')
       return [];
     },
     [publicClient]
