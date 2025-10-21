@@ -1,5 +1,5 @@
 const storage = {
-  setItem: (key: string, value: string | object) => {
+  setItem: (key: string, value: string | object | number) => {
     if (typeof value === 'string') {
       localStorage.setItem(key, value)
     } else {

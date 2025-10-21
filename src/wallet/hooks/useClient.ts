@@ -6,30 +6,31 @@ export function useClient() {
   const chainId = useChainId()
   const chains = useChains()
   const account = useAccount()
-  const connecotr = useConnector()
+  const connector = useConnector()
 
   const publicClient = useMemo(() => {
-    if (!chainId || chains.length <= 0) return null
+    if (!chainId || chains.length <= 0 || !connector || !connector.getProvider()) return null
     const chain = chains.find(chain => chain.id === chainId)
     if (!chain) return null
     return createPublicClient({ 
       chain: chain,
-      transport: http(),
-      
+      // transport: http(),
+      transport: custom(connector.getProvider()!),
     })
-  }, [chainId, chains])
+  // 使用 walletConnect 的时候，只有 account 有值了，provider 才可以使用
+  }, [chainId, account, chains, connector])
 
   const walletClient = useMemo(() => {
-    if (!chainId || chains.length <= 0 || !connecotr || !connecotr.getProvider()) return null
+    if (!chainId || chains.length <= 0 || !connector || !connector.getProvider() || !account) return null
     const chain = chains.find(chain => chain.id === chainId)
     if (!chain) return null
 
     return createWalletClient({ 
       chain: chain,
-      transport: custom(connecotr.getProvider()!),
+      transport: custom(connector.getProvider()!),
       account
     })
-  }, [chainId, chains, account, connecotr])
+  }, [chainId, chains, account, connector])
 
   return {
     publicClient,
