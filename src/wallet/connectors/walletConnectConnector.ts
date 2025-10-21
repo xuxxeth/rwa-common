@@ -258,10 +258,10 @@ export class WalletConnectConnector implements IWalletConnectConnector {
       showQrModal: false,
       qrModalOptions: this.config.qrModalOptions,
       metadata: {
-        name: "CA App",
-        description: "CA App using WalletConnect",
+        name: "CyberAlpha",
+        description: "CyberAlpha",
         url: window.location.origin,
-        icons: [""],
+        icons: ["https://test.cyberalpha.cc/images/logo_dark.png"],
       },
     });
 

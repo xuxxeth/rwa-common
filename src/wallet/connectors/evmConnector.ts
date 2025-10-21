@@ -106,7 +106,6 @@ export class EvmConnector implements IEvmConnector {
 
   // 断开连接
   async disconnect(): Promise<void> {
-    console.log("===> EvmConnector disconnecting...");
     try {
       // 尝试调用钱包的断开连接方法
       const provider = this.wallet?.provider as any;
