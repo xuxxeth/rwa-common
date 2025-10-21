@@ -219,7 +219,6 @@ export function WalletProvider({
   // 连接钱包
   const connect = useCallback(
     async (type: ConnectorType, wallet?: WalletConfig) => {
-      debugger;
       try {
         setIsConnecting(true);
         setError(null);
@@ -265,7 +264,6 @@ export function WalletProvider({
         console.error("Wallet connection failed:", err);
         throw err;
       } finally {
-        debugger;
         setIsConnecting(false);
       }
     },
