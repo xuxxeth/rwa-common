@@ -112,7 +112,7 @@ export class WalletConnectConnector implements IWalletConnectConnector {
       });
 
       // 启用Provider连接
-      const accounts = await this.provider.enable();
+      await this.provider.enable();
 
       // 更新状态
       await this.updateStateFromProvider();
@@ -257,6 +257,9 @@ export class WalletConnectConnector implements IWalletConnectConnector {
       events: ["chainChanged", "accountsChanged"],
       showQrModal: false,
       qrModalOptions: this.config.qrModalOptions,
+      rpcMap: {
+        [bscTestnet.id]: bscTestnet.rpcUrls.default.http[0],
+      },
       metadata: {
         name: "CyberAlpha",
         description: "CyberAlpha",
@@ -293,6 +296,13 @@ export class WalletConnectConnector implements IWalletConnectConnector {
       const chainId = (await this.provider.request({
         method: "eth_chainId",
       })) as number;
+
+      // 如果用户在授权连接的时候默认没有选择 bsctestnet, 这里chainId 会是 1
+      // 但之后会切换到 bsctestnet, 所以这里需要判断一下
+      if(chainId !== bscTestnet.id) {
+        console.log('Default chainId is not bsctestnet, chainId:', chainId, ', and wait for switch to bsctestnet')
+        return
+      }
 
       this.state = {
         accounts: accounts as Address[],
@@ -345,6 +355,25 @@ export class WalletConnectConnector implements IWalletConnectConnector {
       this.updateQrCodeData(null);
       this.updateStateFromProvider();
     });
+
+    // For debugger
+    // this.provider.on('message', (event: any) => {
+    //   console.log('===>message', event);
+    // })
+
+    // this.provider.on('session_event', (event: any) => {
+    //   console.log('===>session_event', event);
+    // })
+    
+    // this.provider.on('session_update', (event: any) => {
+    //   debugger
+    //   console.log('===>session_update', event);
+    // })
+
+    // this.provider.on('session_delete', (event: any) => {
+    //   debugger
+    //   console.log('===>session_delete', event);
+    // })
   }
 
   private getChain(id: number): Chain {
