@@ -7,7 +7,7 @@ import { Address } from "viem";
 import { waitForTransactionReceipt } from 'viem/actions'
 import { useCallWithGasPrice } from "./useCallWithGasPrice";
 import { useClient } from "../../wallet/hooks/useClient";
-import { extractErrorNameAndCode, parseErrorFromMessage } from "../../utils/parseError";
+import { extractErrorNameAndCode, parseErrorFromMessage, getAppErrorMessageFromCode } from "../../utils/parseError";
 import { RESPONSE_CODE } from "../../utils/constants";
 
 
@@ -67,7 +67,8 @@ export function useTrading(token: Address, spender: Address, amount: BigInt) {
         code: RESPONSE_CODE.ERROR,
         data: {
           errorCode: errorMessage?.code,
-          name: errorMessage?.name
+          name: errorMessage?.name,
+          message: getAppErrorMessageFromCode(errorMessage),
         }
       };
     }

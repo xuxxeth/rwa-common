@@ -4,7 +4,7 @@ import { useAccount } from "../../wallet";
 import { useClient } from "../../wallet/hooks/useClient";
 import { useCallWithGasPrice } from "./useCallWithGasPrice";
 import { waitForTransactionReceipt } from "viem/actions";
-import { extractErrorNameAndCode, parseErrorFromMessage } from "../../utils/parseError";
+import { extractErrorNameAndCode, parseErrorFromMessage, getAppErrorMessageFromCode } from "../../utils/parseError";
 import { RESPONSE_CODE } from "../../utils/constants";
 
 export function useTradeUtils() {
@@ -52,7 +52,8 @@ export function useTradeUtils() {
           code: RESPONSE_CODE.ERROR,
           data: {
             errorCode: errorMessage?.code,
-            name: errorMessage?.name
+            name: errorMessage?.name,
+            message: getAppErrorMessageFromCode(errorMessage)
           }
         };
       }

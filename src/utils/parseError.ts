@@ -1,6 +1,7 @@
 import { keccak256, toHex } from "viem"
 
 import { errorsList } from "./errors"
+import { AppErrorCodeToTextMap } from './AppErrorCodeToText'
 
 /**
  * 规范化参数类型（将 `uint` -> `uint256`，`int` -> `int256`，去掉多余空格等）
@@ -72,6 +73,8 @@ export function parseErrorFromMessage(error: any) {
   
 }
 
+type ExtractedError = { name: string; code: string }
+
 /**
  * 从日志中提取错误名与 4 位错误码（优先严格匹配，兜底回溯）
  * - 错误码只匹配 4 位数字（\d{4}），可按需改为 \d+。
@@ -80,7 +83,7 @@ export function parseErrorFromMessage(error: any) {
  * @param log 原始日志文本
  * @returns { name, code } 或 null
  */
-export function extractErrorNameAndCode(log: string): { name: string; code: string } | null {
+export function extractErrorNameAndCode(log: string): ExtractedError | null {
   console.log(log)
   if (!log || typeof log !== 'string') return null;
 
@@ -161,5 +164,11 @@ export function extractErrorNameAndCode(log: string): { name: string; code: stri
   }
 
   return null;
+}
+
+export function getAppErrorMessageFromCode(error: ExtractedError | null) {
+  if (error?.name === 'AppError' && error?.code) {
+    return AppErrorCodeToTextMap.get(error.code)
+  }
 }
 

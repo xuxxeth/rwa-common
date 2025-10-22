@@ -79,6 +79,7 @@ export function useWalletDiscovery() {
 
             if (discoveredWallet) {
               return {
+                ...wallet,
                 ...discoveredWallet,
                 detected: true,
               };
