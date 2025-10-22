@@ -76,6 +76,10 @@ export class WalletConnectConnector implements IWalletConnectConnector {
   async connect(
     wallet: WalletConfig = walletConnectWallet
   ): Promise<WalletState> {
+
+    // 如果有二维码，清空上次的二维码数据
+    this.updateQrCodeData(null);
+
     // 初始化Provider
     await this.initializeProvider();
 
