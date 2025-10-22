@@ -53,11 +53,16 @@ export function increaseLocalNonce(chainId: number, account: Hex) {
 }
 
 export async function getNonce(client: { getTransactionCount: (arg0: { address: `0x${string}` }) => any }, address: `0x${string}`) {
-  const nonce = await client.getTransactionCount({
-    address,
-  })
-  console.log("当前 nonce:", nonce)
-  return nonce
+
+  try {
+    const nonce = await client.getTransactionCount({ address });
+    console.log("当前 nonce:", nonce);
+    return nonce
+  } catch (error) {
+    // 如果获取失败，就生成随机 nonce
+    const randomNonce = Math.floor(Math.random() * (800 - 50 + 1)) + 50;
+    return randomNonce;
+  }
 }
 
 
