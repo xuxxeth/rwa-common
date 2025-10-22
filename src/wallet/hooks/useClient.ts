@@ -14,8 +14,7 @@ export function useClient() {
     if (!chain) return null
     return createPublicClient({ 
       chain: chain,
-      // transport: http(),
-      transport: custom(connector.getProvider()!),
+      transport: http(),
     })
   // 使用 walletConnect 的时候，只有 account 有值了，provider 才可以使用
   }, [chainId, account, chains, connector])
