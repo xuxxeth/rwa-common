@@ -23,6 +23,7 @@ export type {
   NetworkFeeType,
   TradeType,
   Side,
-  Tif
+  Tif,
+  ApprovalState
 } from './contract/types'
 
