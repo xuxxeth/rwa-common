@@ -45,5 +45,6 @@ export const errorsList = [
     "error StalePrice()",
 
     "error Unauthorized()",
-    "error UnsupportedToken()"
+    "error UnsupportedToken()",
+    "error ERC20InsufficientAllowance(address,uint256,uint256)"
 ]
