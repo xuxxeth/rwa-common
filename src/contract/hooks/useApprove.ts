@@ -5,13 +5,7 @@ import { useTokenAllowanceByChainId } from "./useTokenAllowance"
 import { useTokenContract } from "./useContract"
 import { Address, maxUint256, SendTransactionReturnType } from "viem"
 import { calculateGasMargin } from "../../utils"
-
-export enum ApprovalState {
-  UNKNOWN,
-  NOT_APPROVED,
-  PENDING,
-  APPROVED,
-}
+import { ApprovalState } from "../types"
 
 export function useApprove(
   token: Address,
@@ -43,7 +37,7 @@ export function useApprove(
     refetch().then(() => {
       setPending(false)
     })
-  }, [pending, refetch, targetAmount, account])
+  }, [pending, refetch, account])
 
   const approvalState: ApprovalState = useMemo(() => {
     if (!spender) return ApprovalState.UNKNOWN

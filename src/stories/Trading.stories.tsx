@@ -15,6 +15,7 @@ import { TradingNetworks, useTradeUtils } from '../contract';
 import { useSignature } from '../wallet/hooks/useSignature';
 import { useTokenBalances } from '../wallet/index'
 import { parseEther } from 'viem';
+import { RESPONSE_CODE } from '../utils/constants';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -67,7 +68,8 @@ const TradingDemo: React.FC = () => {
   const payToken = useMemo(() => action === 'buy' ? usdt : applec, [action] )
   const amount = useMemo(() => (BigInt(limitPrice) * BigInt(size)) * BigInt((10 ** 6)), [limitPrice, size])
 
-  const { approvalState, placeOrder, allowance } = useTrading(usdt, TradingNetworks[ChainId.BSCTEST], BigInt(amount))
+  const { approvalState, allowance, approve, placeOrder,  } = useTrading(usdt, TradingNetworks[ChainId.BSCTEST], BigInt(amount))
+  console.log(approvalState, allowance)
   const { publicClient} = useClient()
   const { cancelOrder } = useTradeUtils()
 
@@ -105,6 +107,10 @@ const TradingDemo: React.FC = () => {
     console.log('params: ', params)
     const res = await placeOrder(params, {wait: true, value: parseEther('0.0001').toString()})
     console.log(res)
+    if (res && res.code !== 9200) {
+      // @ts-ignore
+      alert(res.data.message)
+    }
   }, [placeOrder, amount, payToken, action])
 
   console.log('approvalState: ', approvalState)
@@ -163,7 +169,20 @@ const TradingDemo: React.FC = () => {
       <div className=' flex gap-x-4 items-center mt-5'>
         <Button onClick={() => setAction('buy')} label='Buy'></Button>
         <Button onClick={() => setAction('sell')} label='Sell'></Button>
-        <Button onClick={() => handlePlaceOrder()} label='placeOrder'></Button>
+        <Button onClick={async () => {
+          if (approvalState === 3) {
+            handlePlaceOrder()
+          } else {
+            const res = await approve()
+            console.log(res)
+            if (res.code !== RESPONSE_CODE.SUCCESS) {
+              // @ts-ignore
+              alert(res.data.message || res.data.name)
+            }
+          }
+          
+            
+        }} label={approvalState === 3 ? 'PlaceOrder' : 'Approve'}></Button>
       </div>
       <div className=' flex'>
         <Button onClick={() => {
@@ -185,6 +204,10 @@ const TradingDemo: React.FC = () => {
         <Button onClick={async () => {
           const res = await cancelOrder(Number(orderId), { wait: true })
           console.log(res)
+          if (res.code !== 9200) {
+            // @ts-ignore
+            alert(res.data.message)
+          }
         }} label='cancelOrder'></Button>
       </div>
     </div>

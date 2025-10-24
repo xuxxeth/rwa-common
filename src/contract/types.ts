@@ -53,3 +53,11 @@ export const Tif = {
   GTC: 2,
 }
 export type Tif = typeof Tif[keyof typeof Tif];
+
+export const ApprovalState = {
+  UNKNOWN: 0,
+  NOT_APPROVED: 1,
+  PENDING: 2,
+  APPROVED: 3,
+}
+export type ApprovalState = typeof ApprovalState[keyof typeof ApprovalState];

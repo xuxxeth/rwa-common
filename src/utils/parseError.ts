@@ -2,6 +2,7 @@ import { keccak256, toHex } from "viem"
 
 import { errorsList } from "./errors"
 import { AppErrorCodeToTextMap } from './AppErrorCodeToText'
+import { ERROR_CODE } from "./constants";
 
 /**
  * 规范化参数类型（将 `uint` -> `uint256`，`int` -> `int256`，去掉多余空格等）
@@ -172,3 +173,18 @@ export function getAppErrorMessageFromCode(error: ExtractedError | null) {
   }
 }
 
+export function getUserRejection(error: any) {
+  const msg = typeof error === "string" ? error : error?.message || error?.details || "";
+  const patterns = [
+    /User rejected the request/i,
+    /User denied transaction/i,
+    /User rejected signature/i,
+  ];
+
+  for (const regex of patterns) {
+    const match = msg.match(regex);
+    if (match) return { code: ERROR_CODE.USERREJECT, name: match[0] } ;
+  }
+
+  return null;
+}
