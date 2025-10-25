@@ -57,7 +57,6 @@ const errorSelectors = buildErrorSelectorMap(errorsList);
 
 export function parseErrorFromMessage(error: any) {
   const message = error.toString()
-  console.log(message)
   try {
     const match = message.match(/0x[0-9a-fA-F]{8}/);
     if (!match) {
@@ -85,7 +84,6 @@ type ExtractedError = { name: string; code: string }
  * @returns { name, code } 或 null
  */
 export function extractErrorNameAndCode(log: string): ExtractedError | null {
-  console.log(log)
   if (!log || typeof log !== 'string') return null;
 
   // 优先严格模式：同时捕获 name 与 4 位 code
@@ -183,7 +181,7 @@ export function getUserRejection(error: any) {
 
   for (const regex of patterns) {
     const match = msg.match(regex);
-    if (match) return { code: ERROR_CODE.USERREJECT, name: match[0] } ;
+    if (match) return { errorCode: ERROR_CODE.USERREJECT, name: match[0] } ;
   }
 
   return null;

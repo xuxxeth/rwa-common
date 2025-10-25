@@ -125,7 +125,6 @@ export function useConnectorManager(
       evmConnector.current = EvmConnector.getInstance(mergedConfig);
       walletConnectConnector.current =
         WalletConnectConnector.getInstance(mergedConfig);
-
       setChains(mergedConfig.chains);
     }
   }, [config]);
@@ -138,7 +137,7 @@ export function useConnectorManager(
 }
 
 // 自定义 Hook：连接状态管理
-export function useConnectionState() {
+export function useConnectionState(config?: ManagerConfig) {
   const [connector, setConnector] = useState<IWalletConnector | null>(null);
   const [state, setState] = useState<WalletState>({
     accounts: [],
@@ -157,8 +156,16 @@ export function useConnectionState() {
     };
 
     const handleChainChanged = (chainId: number) => {
-      setState((prev) => ({ ...prev, chainId }));
-      storage.setItem(STORAGE_KEYS.DEFAULT_CHAIN_ID, chainId);
+      // 这里要判断一下，如果是非支持的链，则不进行存储操作
+      const chains = config?.chains || []
+      const nowChain = chains.find(chain => chain.id === chainId)
+      let _chainId: number | null = null;
+      if (nowChain) {
+        _chainId = nowChain.id
+      } 
+      
+      setState((prev) => ({ ...prev, chainId: _chainId }));
+      storage.setItem(STORAGE_KEYS.DEFAULT_CHAIN_ID, _chainId || '');
     };
 
     const handleDisconnect = () => {
@@ -215,7 +222,7 @@ export function WalletProvider({
     setState,
     setIsConnecting,
     setError,
-  } = useConnectionState();
+  } = useConnectionState(config);
 
   // 连接钱包
   const connect = useCallback(
@@ -288,6 +295,7 @@ export function WalletProvider({
   useEffect(() => {
     if (config?.defaultChainId) {
       const storedChainId = storage.getItem(STORAGE_KEYS.DEFAULT_CHAIN_ID);
+      // 这里要判断一下，如果是非支持的链，则使用默认链
       const defaultChainId = storedChainId || config.defaultChainId;
       setState((prev) => ({ ...prev, chainId: defaultChainId }));
     }

@@ -38,9 +38,15 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+const chains = [bscTestnet, xLayerTestnet]
+
 export const TradingApp: React.FC = () => {
+  const [innerChains, setInnerChains] = useState<any[]>([])
+  useEffect(() => {
+    setInnerChains(chains)
+  }, [])
   return (
-    <WalletProvider config={{ chains: [bscTestnet, xLayerTestnet], defaultChainId: 97 }}>
+    <WalletProvider config={{ chains: innerChains, defaultChainId: 97 }}>
       <TradingDemo />
     </WalletProvider>
   )

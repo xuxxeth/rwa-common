@@ -126,7 +126,6 @@ export function useTrading(token: Address, spender: Address, amount: BigInt) {
       if (!errorMessage) {
         errorMessage = parseErrorFromMessage(error.toString())
       }
-      
       return {
         code: RESPONSE_CODE.ERROR,
         data: {
