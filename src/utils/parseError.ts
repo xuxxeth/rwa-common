@@ -181,7 +181,7 @@ export function getUserRejection(error: any) {
 
   for (const regex of patterns) {
     const match = msg.match(regex);
-    if (match) return { errorCode: ERROR_CODE.USERREJECT, name: match[0] } ;
+    if (match) return { code: ERROR_CODE.USERREJECT, name: match[0] } ;
   }
 
   return null;

@@ -68,7 +68,7 @@ export function useTrading(token: Address, spender: Address, amount: BigInt) {
         data: {
           errorCode: errorMessage?.code,
           name: errorMessage?.name,
-          message: '',
+          message: errorMessage?.code === ERROR_CODE.USERREJECT ? 'userReject' : 'UnknownErro',
         }
       };
     }
@@ -119,8 +119,9 @@ export function useTrading(token: Address, spender: Address, amount: BigInt) {
         }
       };
     } catch (error: any) {
+      console.log(error.toString())
       let errorMessage: any = getUserRejection(error.toString())
-      if (!errorMessage || !errorMessage.errorCode) {
+      if (!errorMessage || !errorMessage.code) {
         errorMessage = extractErrorNameAndCode(error.toString());
       }
       if (!errorMessage) {
@@ -131,7 +132,7 @@ export function useTrading(token: Address, spender: Address, amount: BigInt) {
         data: {
           errorCode: errorMessage?.code,
           name: errorMessage?.name,
-          message: getAppErrorMessageFromCode(errorMessage) || errorMessage?.name?.slice(0, errorMessage?.name?.indexOf('(')),
+          message: errorMessage?.code === ERROR_CODE.USERREJECT ? 'userReject' : getAppErrorMessageFromCode(errorMessage) || errorMessage?.name?.slice(0, errorMessage?.name?.indexOf('(')),
         }
       };
     }
