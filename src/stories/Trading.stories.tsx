@@ -38,9 +38,15 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+const chains = [bscTestnet, xLayerTestnet]
+
 export const TradingApp: React.FC = () => {
+  const [innerChains, setInnerChains] = useState<any[]>([])
+  useEffect(() => {
+    setInnerChains(chains)
+  }, [])
   return (
-    <WalletProvider config={{ chains: [bscTestnet, xLayerTestnet], defaultChainId: 97 }}>
+    <WalletProvider config={{ chains: innerChains, defaultChainId: 97 }}>
       <TradingDemo />
     </WalletProvider>
   )
@@ -63,7 +69,7 @@ const TradingDemo: React.FC = () => {
   const { getTokenBalances } = useTokenBalances()
 
   const usdt = '0xbeD5856646F1faBDFc565F47f8Ea18685466B745'
-  const applec = '0x2430341443b0244f94392Be0a024a64aDAa1e114'
+  const applec = '0x73f90e7BAd4C6DC7C573677346028Db8A5752d34'
 
   const payToken = useMemo(() => action === 'buy' ? usdt : applec, [action] )
   const amount = useMemo(() => (BigInt(limitPrice) * BigInt(size)) * BigInt((10 ** 6)), [limitPrice, size])

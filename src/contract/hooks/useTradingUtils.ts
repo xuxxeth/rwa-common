@@ -4,8 +4,8 @@ import { useAccount } from "../../wallet";
 import { useClient } from "../../wallet/hooks/useClient";
 import { useCallWithGasPrice } from "./useCallWithGasPrice";
 import { waitForTransactionReceipt } from "viem/actions";
-import { extractErrorNameAndCode, parseErrorFromMessage, getAppErrorMessageFromCode } from "../../utils/parseError";
-import { RESPONSE_CODE } from "../../utils/constants";
+import { extractErrorNameAndCode, parseErrorFromMessage, getAppErrorMessageFromCode, getUserRejection } from "../../utils/parseError";
+import { ERROR_CODE, RESPONSE_CODE } from "../../utils/constants";
 
 export function useTradeUtils() {
   const tradingContract = useTradingContract();
@@ -40,20 +40,26 @@ export function useTradeUtils() {
         return {
           code: RESPONSE_CODE.ERROR,
           data: {
-            errorCode: '-1',
+            errorCode: ERROR_CODE.NOCONTRACT,
             message: "no contract or account",
           }
           
         };
       } catch (error: any) {
         // const errorMessage = parseErrorFromMessage(error);
-        const errorMessage = extractErrorNameAndCode(error.toString());
+        let errorMessage: any = getUserRejection(error.toString())
+        if (!errorMessage || !errorMessage.code) {
+          errorMessage = extractErrorNameAndCode(error.toString());
+        }
+        if (!errorMessage) {
+          errorMessage = parseErrorFromMessage(error.toString())
+        }
         return {
           code: RESPONSE_CODE.ERROR,
           data: {
             errorCode: errorMessage?.code,
             name: errorMessage?.name,
-            message: getAppErrorMessageFromCode(errorMessage)
+            message: errorMessage?.code === ERROR_CODE.USERREJECT ? 'userReject' : getAppErrorMessageFromCode(errorMessage)
           }
         };
       }
