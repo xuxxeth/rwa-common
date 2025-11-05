@@ -104,11 +104,11 @@ const TradingDemo: React.FC = () => {
       tif: '0',
       sessionType: '0',
       paymentToken: usdt, // address
-      validDate: '10', // s
+      validDate: '1', // s
       networkFee: '0', // 0.002
       amount: '0', // 10 usdt
-      price: '100000000',   // 1 usdt
-      size: '2000000'    // 10
+      price: '270000000',   // 1 usdt
+      size: '5000000'    // 10
     }
     console.log('params: ', params)
     const res = await placeOrder(params, {wait: true, value: parseEther('0.0001').toString()})
