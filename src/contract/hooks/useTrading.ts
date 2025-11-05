@@ -132,7 +132,8 @@ export function useTrading(token: Address, spender: Address, amount: BigInt) {
         data: {
           errorCode: errorMessage?.code,
           name: errorMessage?.name,
-          message: errorMessage?.code === ERROR_CODE.USERREJECT ? 'userReject' : getAppErrorMessageFromCode(errorMessage) || errorMessage?.name?.slice(0, errorMessage?.name?.indexOf('(')),
+          message: errorMessage?.code === ERROR_CODE.USERREJECT ? 'userReject' : 
+            getAppErrorMessageFromCode(errorMessage) || errorMessage?.name?.slice(0, errorMessage?.name?.indexOf('(') > -1 ? errorMessage?.name?.indexOf('(') : 10000),
         }
       };
     }

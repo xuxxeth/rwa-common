@@ -73,8 +73,6 @@ export function parseErrorFromMessage(error: any) {
   
 }
 
-type ExtractedError = { name: string; code: string }
-
 /**
  * 从日志中提取错误名与 4 位错误码（优先严格匹配，兜底回溯）
  * - 错误码只匹配 4 位数字（\d{4}），可按需改为 \d+。
@@ -83,56 +81,50 @@ type ExtractedError = { name: string; code: string }
  * @param log 原始日志文本
  * @returns { name, code } 或 null
  */
-export function extractErrorNameAndCode(log: string): ExtractedError | null {
-  if (!log || typeof log !== 'string') return null;
+type ExtractedError = { name: string; code: string | null } | null;
 
-  // 优先严格模式：同时捕获 name 与 4 位 code
+export function extractErrorNameAndCode(log: string): ExtractedError {
+  if (!log || typeof log !== "string") return null;
+
   const patterns: RegExp[] = [
-    // ✅ 匹配多行形式: Error: AppError(uint32 code)\n   (1234)
+    // name + (1234) on next line or same line + digits
     /(?:Error:\s*)?([A-Za-z_][A-Za-z0-9_]*)[^\n\r]*\)[^\S\r\n]*[\r\n]+\s*\(\s*(\d{4})\s*\)/i,
-
-    // ✅ 匹配单行紧跟形式: AppError(...)(1234)
     /(?:Error:\s*)?([A-Za-z_][A-Za-z0-9_]*)[^\n\r]*\)\s*\(\s*(\d{4})\s*\)/i,
-
-    // ✅ 匹配 key:value 形式: Error: AppError: 1234 或 AppError: 1234
     /(?:Error[^\S\r\n]*[:]\s*)?([A-Za-z_][A-Za-z0-9_]*)[^\S\r\n]*[:=]\s*(\d{4})\b/i,
-
-    // ✅ 匹配 code=1234 形式: AppError(... code=1234 ...)
     /(?:Error:\s*)?([A-Za-z_][A-Za-z0-9_]*)[^\n\r]{0,120}\bcode\s*=\s*(\d{4})\b/i,
-
-    // ✅ 兜底：AppError ... (1234) 在同一行内
     /(?:Error:\s*)?([A-Za-z_][A-Za-z0-9_]*)[^\n\r]{0,120}\(\s*(\d{4})\s*\)/i,
-  ];
 
+    // 新增：只有 name 的情况，如 "Error: InvalidArgument()" 或 "InvalidArgument()"
+    /(?:Error:\s*)?([A-Za-z_][A-Za-z0-9_]*)\s*\(\s*\)/i,
+
+    // 如果还有其它无括号但带 Error: Name 形式，也可捕获
+    /(?:Error:\s*)?([A-Za-z_][A-Za-z0-9_]*)\b/i,
+  ];
 
   for (const re of patterns) {
     const m = log.match(re);
-    if (m && m[1] && m[2]) {
-      return { name: m[1], code: m[2] };
+    if (m && m[1]) {
+      const name = m[1];
+      const code = m[2] ?? null;
+      return { name, code };
     }
   }
 
-  // 如果上面的严格模式没有命中，尝试更通用的回溯策略：
-  // 1. 找到所有 "(1234)" 出现位置（或 standalone 4-digit），
-  // 2. 对每个位置向左截取一段上下文（例如 200 字符），在这段文本中找最近的 "Name(" 或 "Name:" 或 "Name" 模式。
+  // 回溯策略：查找 "(1234)" 并向左回溯寻找 name
   const parenRegex = /\(\s*(\d{4})\s*\)/g;
   let match: RegExpExecArray | null;
   while ((match = parenRegex.exec(log)) !== null) {
     const code = match[1];
     const idx = match.index;
-    // 向左回溯一定长度（例如 200 字符）
     const leftSliceStart = Math.max(0, idx - 200);
     const leftContext = log.slice(leftSliceStart, idx);
 
-    // 在 leftContext 中从右向左寻找形如 Name( 或 Name: 或 Error Name
-    // 我们先找 Name( 最严格，再找 Name: 或 Name =
     const namePatterns: RegExp[] = [
-      /([A-Za-z_][A-Za-z0-9_]*)\s*\($/i, // ... Name(
-      /([A-Za-z_][A-Za-z0-9_]*)\s*[:=]\s*$/i, // ... Name:
-      /([A-Za-z_][A-Za-z0-9_]*)\b$/i, // ... Name (结束)
+      /([A-Za-z_][A-Za-z0-9_]*)\s*\($/i,
+      /([A-Za-z_][A-Za-z0-9_]*)\s*[:=]\s*$/i,
+      /([A-Za-z_][A-Za-z0-9_]*)\b$/i,
     ];
 
-    // 为了让 $ 在 right-context 有意义，我们直接尝试从后面匹配
     for (const np of namePatterns) {
       const mm = leftContext.match(np);
       if (mm && mm[1]) {
@@ -140,16 +132,14 @@ export function extractErrorNameAndCode(log: string): ExtractedError | null {
       }
     }
 
-    // 另外尝试：在 leftContext 中找到第一个像 ErrorName(...) 的单词（从右侧寻找）
     const generic = /([A-Za-z_][A-Za-z0-9_]*)[^\w]{0,10}$/i;
     const gen = leftContext.match(generic);
-
     if (gen && gen[1]) {
       return { name: gen[1], code };
     }
   }
 
-  // 如果仍然没有匹配，尝试查找 " code=1234 " 并回溯 name 前缀
+  // 再尝试 code=1234 的回溯
   const codeEq = /code\s*=\s*(\d{4})/i.exec(log);
   if (codeEq) {
     const code = codeEq[1];

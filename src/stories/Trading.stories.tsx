@@ -61,15 +61,15 @@ const TradingDemo: React.FC = () => {
   const chainId = useChainId()
   const switchChain = useSwitchChain()
   const [action, setAction] = useState('buy')
-  const [limitPrice, setLimitPrice] = useState('0')
-  const [size, setSize] = useState('0')
+  const [limitPrice, setLimitPrice] = useState('231')
+  const [size, setSize] = useState('2')
   const [orderId, setOrderId] = useState('29532595632996353')
 
   const { requestSignature } = useSignature()
   const { getTokenBalances } = useTokenBalances()
 
   const usdt = '0xbeD5856646F1faBDFc565F47f8Ea18685466B745'
-  const applec = '0x73f90e7BAd4C6DC7C573677346028Db8A5752d34'
+  const applec = '0xf552b97B36daC3f263eeb0f930F11E5a065f9d96'
 
   const payToken = useMemo(() => action === 'buy' ? usdt : applec, [action] )
   const amount = useMemo(() => (BigInt(limitPrice) * BigInt(size)) * BigInt((10 ** 6)), [limitPrice, size])
@@ -101,14 +101,14 @@ const TradingDemo: React.FC = () => {
       stockId: '1',
       tradeType: '0',
       side: action === 'buy' ? '0' : '1',
-      tif: '1',
+      tif: '0',
       sessionType: '0',
       paymentToken: usdt, // address
       validDate: '10', // s
       networkFee: '0', // 0.002
       amount: '0', // 10 usdt
-      price: '1000000000',   // 1 usdt
-      size: '10000000'    // 10
+      price: '100000000',   // 1 usdt
+      size: '2000000'    // 10
     }
     console.log('params: ', params)
     const res = await placeOrder(params, {wait: true, value: parseEther('0.0001').toString()})
@@ -117,7 +117,7 @@ const TradingDemo: React.FC = () => {
       // @ts-ignore
       alert(res.data.message)
     }
-  }, [placeOrder, amount, payToken, action])
+  }, [placeOrder, limitPrice, amount, payToken, action])
 
   console.log('approvalState: ', approvalState)
   console.log('allowance: ', allowance)
