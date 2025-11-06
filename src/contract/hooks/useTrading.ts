@@ -11,8 +11,8 @@ import { extractErrorNameAndCode, getAppErrorMessageFromCode, getUserRejection, 
 import { ERROR_CODE, RESPONSE_CODE } from "../../utils/constants";
 
 
-export function useTrading(token: Address, spender: Address, amount: BigInt) {
-  const tradingContract = useTradingContract()
+export function useTrading(token: Address, spender?: Address, amount: BigInt = BigInt(0)) {
+  const tradingContract = useTradingContract(spender)
   const account = useAccount()
   const { publicClient } = useClient()
   const { callWithGasPrice } = useCallWithGasPrice()

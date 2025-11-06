@@ -14,7 +14,7 @@ import '../utils/parseError'
 import { TradingNetworks, useTradeUtils } from '../contract';
 import { useSignature } from '../wallet/hooks/useSignature';
 import { useTokenBalances } from '../wallet/index'
-import { parseEther } from 'viem';
+import { Address, parseEther } from 'viem';
 import { RESPONSE_CODE } from '../utils/constants';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
@@ -67,6 +67,7 @@ const TradingDemo: React.FC = () => {
 
   const { requestSignature } = useSignature()
   const { getTokenBalances } = useTokenBalances()
+  const [trading, setTrading] = useState<Address | undefined>(undefined)
 
   const usdt = '0xbeD5856646F1faBDFc565F47f8Ea18685466B745'
   const applec = '0xf552b97B36daC3f263eeb0f930F11E5a065f9d96'
@@ -74,16 +75,20 @@ const TradingDemo: React.FC = () => {
   const payToken = useMemo(() => action === 'buy' ? usdt : applec, [action] )
   const amount = useMemo(() => (BigInt(limitPrice) * BigInt(size)) * BigInt((10 ** 6)), [limitPrice, size])
 
-  const { approvalState, allowance, approve, placeOrder,  } = useTrading(usdt, TradingNetworks[ChainId.BSCTEST], BigInt(amount))
+  const { approvalState, allowance, approve, placeOrder,  } = useTrading(usdt, trading, BigInt(amount))
   console.log(approvalState, allowance)
   const { publicClient} = useClient()
-  const { cancelOrder } = useTradeUtils()
+  const { cancelOrder } = useTradeUtils(trading)
 
   useEffect(() => {
      publicClient?.getBlockNumber() 
       .then(res => {
         console.log(res)
       })
+
+      setTimeout(() => {
+        setTrading('0x6c5A81eC1D8cF4A389F6Cc9498A3096CF823cb88')
+      }, 500)
   }, [publicClient])
 
   useEffect(() => {
@@ -104,11 +109,11 @@ const TradingDemo: React.FC = () => {
       tif: '0',
       sessionType: '0',
       paymentToken: usdt, // address
-      validDate: '10', // s
+      validDate: '1', // s
       networkFee: '0', // 0.002
       amount: '0', // 10 usdt
-      price: '100000000',   // 1 usdt
-      size: '2000000'    // 10
+      price: '270000000',   // 1 usdt
+      size: '5000000'    // 10
     }
     console.log('params: ', params)
     const res = await placeOrder(params, {wait: true, value: parseEther('0.0001').toString()})
