@@ -83,7 +83,7 @@ const TradingDemo: React.FC = () => {
   useEffect(() => {
      publicClient?.getBlockNumber() 
       .then(res => {
-        console.log(res)
+        console.log('BlockNumber: ', res)
       })
 
       setTimeout(() => {
