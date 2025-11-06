@@ -6,9 +6,10 @@ import { useCallWithGasPrice } from "./useCallWithGasPrice";
 import { waitForTransactionReceipt } from "viem/actions";
 import { extractErrorNameAndCode, parseErrorFromMessage, getAppErrorMessageFromCode, getUserRejection } from "../../utils/parseError";
 import { ERROR_CODE, RESPONSE_CODE } from "../../utils/constants";
+import { Address } from "viem";
 
-export function useTradeUtils() {
-  const tradingContract = useTradingContract();
+export function useTradeUtils(trading?: Address) {
+  const tradingContract = useTradingContract(trading);
   const account = useAccount();
   const { publicClient } = useClient();
   const { callWithGasPrice } = useCallWithGasPrice();
