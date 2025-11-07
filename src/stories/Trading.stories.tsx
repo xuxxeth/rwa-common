@@ -75,7 +75,7 @@ const TradingDemo: React.FC = () => {
   const payToken = useMemo(() => action === 'buy' ? usdt : applec, [action] )
   const amount = useMemo(() => (BigInt(limitPrice) * BigInt(size)) * BigInt((10 ** 6)), [limitPrice, size])
 
-  const { approvalState, allowance, approve, placeOrder,  } = useTrading(usdt, trading, BigInt(amount))
+  const { approvalState, allowance, refetchAllowance, approve, placeOrder,  } = useTrading(usdt, trading, BigInt(amount))
   console.log(approvalState, allowance)
   const { publicClient} = useClient()
   const { cancelOrder } = useTradeUtils(trading)
@@ -189,6 +189,9 @@ const TradingDemo: React.FC = () => {
             if (res.code !== RESPONSE_CODE.SUCCESS) {
               // @ts-ignore
               alert(res.data.message || res.data.name)
+            } else {
+              const _allowance = await refetchAllowance()
+              console.log('New Allowance: ', _allowance)
             }
           }
           

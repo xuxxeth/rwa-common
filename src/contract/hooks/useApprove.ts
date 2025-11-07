@@ -26,11 +26,11 @@ export function useApprove(
   const [pending, setPending] = useState<boolean>(false)
   const [isPendingError, setIsPendingError] = useState<boolean>(false)
 
-  const refetchAllowance = useCallback(() => {
+  const refetchAllowance = useCallback(async () => {
     setPending(true)
-    refetch().then(() => {
-      setPending(false)
-    })
+    const _allowance = await refetch()
+    setPending(false)
+    return _allowance
   }, [refetch])
 
   useEffect(() => {
