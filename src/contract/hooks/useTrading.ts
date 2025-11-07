@@ -151,6 +151,7 @@ export function useTrading(token: Address, spender?: Address, amount: BigInt = B
     approvalState: approvalState,
     allowance: currentAllowance,
     contract: tradingContract,
+    refetchAllowance,
     approve,
     placeOrder
   }
