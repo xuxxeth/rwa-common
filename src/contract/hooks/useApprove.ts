@@ -37,7 +37,7 @@ export function useApprove(
     refetch().then(() => {
       setPending(false)
     })
-  }, [pending, refetch, account])
+  }, [pending, refetch, account, token])
 
   const approvalState: ApprovalState = useMemo(() => {
     if (!spender) return ApprovalState.UNKNOWN
@@ -49,7 +49,7 @@ export function useApprove(
         ? ApprovalState.PENDING
         : ApprovalState.NOT_APPROVED
       : ApprovalState.APPROVED
-  }, [currentAllowance, pending, spender, account, targetAmount])
+  }, [currentAllowance, pending, spender, account, targetAmount, token])
 
   const tokenContract = useTokenContract(token)
 
