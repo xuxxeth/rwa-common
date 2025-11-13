@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Abi, Address, erc20Abi, getAddress } from 'viem'
 import type { Account, Chain, ContractFunctionArgs, ContractFunctionName, EstimateContractGasParameters } from 'viem'
-import { QueryObserverResult, useQuery } from '@tanstack/react-query'
-import { FAST_INTERVAL } from '../config'
 import { useClient } from '../../wallet/hooks/useClient'
-import { ERC20Contract } from '../types'
 import { useCallWithGasPrice } from './useCallWithGasPrice'
 
 export function useGetTokenAllowance(
@@ -23,7 +20,7 @@ export function useGetTokenAllowance(
 }
 
 export function useTokenAllowance() {
-  const { publicClient, walletClient } = useClient()
+  const { publicClient } = useClient()
   const { callWithGasPrice } = useCallWithGasPrice()
   
   const getAllowance = useCallback(async (token: Address | string, owner: Address | string, spender: Address | string) => {
@@ -100,9 +97,8 @@ export function useTokenAllowanceByChainId({
   }, [publicClient, token, spender, owner])
 
   useEffect(() => {
-    if (publicClient) {
-      refetch()
-    }
+    setAllowance(BigInt(0))
+    refetch()
   }, [publicClient, refetch, token, spender, owner])
 
   return useMemo(
@@ -110,7 +106,7 @@ export function useTokenAllowanceByChainId({
       allowance: allowance || BigInt(0),
       refetch,
     }),
-    [token, refetch, allowance, publicClient],
+    [refetch, allowance],
   )
 }
 

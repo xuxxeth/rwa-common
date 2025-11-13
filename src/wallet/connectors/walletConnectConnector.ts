@@ -272,8 +272,6 @@ export class WalletConnectConnector implements IWalletConnectConnector {
       },
     });
 
-    console.log("WalletConnect provider initialized", this.provider);
-
     // 订阅事件
     this.subscribeToEvents();
   }
@@ -321,7 +319,6 @@ export class WalletConnectConnector implements IWalletConnectConnector {
           : false,
       };
 
-      console.log("State updated from provider:", this.state);
     } catch (error) {
       console.error("Failed to update state from provider:", error);
     }
@@ -355,29 +352,9 @@ export class WalletConnectConnector implements IWalletConnectConnector {
     // 连接事件
     this.provider.on("connect", () => {
       const provider = this.provider;
-      console.log("WalletConnect connected");
       this.updateQrCodeData(null);
       this.updateStateFromProvider();
     });
-
-    // For debugger
-    // this.provider.on('message', (event: any) => {
-    //   console.log('===>message', event);
-    // })
-
-    // this.provider.on('session_event', (event: any) => {
-    //   console.log('===>session_event', event);
-    // })
-    
-    // this.provider.on('session_update', (event: any) => {
-    //   debugger
-    //   console.log('===>session_update', event);
-    // })
-
-    // this.provider.on('session_delete', (event: any) => {
-    //   debugger
-    //   console.log('===>session_delete', event);
-    // })
   }
 
   private getChain(id: number): Chain {

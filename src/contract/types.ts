@@ -3,10 +3,10 @@ import { erc20Abi, type GetContractReturnType, type PublicClient } from 'viem'
 
 export  type PlaceOrderProps = {
   stockId: string,
-  tradeType: string,
-  side: string,
-  tif: string,
-  sessionType: string,
+  tradeType: TradeType,
+  side: SideType,
+  tif: TifType,
+  sessionType: SessionType,
   paymentToken: string, // address
   validDate: string, // s
   networkFee: string,
@@ -14,8 +14,6 @@ export  type PlaceOrderProps = {
   price: string,
   size: string
 }
-
-
 
 export type ERC20Contract = GetContractReturnType<typeof erc20Abi, PublicClient>
 
@@ -29,11 +27,11 @@ export const SessionType = {
 
 export type SessionType = typeof SessionType[keyof typeof SessionType];
 
-export const NetworkFeeType = {
+export const NetworkFee = {
   NATIVE: 0,
   STABLE: 1
 }
-export type NetworkFeeType = typeof NetworkFeeType[keyof typeof NetworkFeeType];
+export type NetworkFeeType = typeof NetworkFee[keyof typeof NetworkFee];
 
 export const TradeType = {
   LIMIT: 0,
@@ -41,18 +39,18 @@ export const TradeType = {
 }
 export type TradeType = typeof TradeType[keyof typeof TradeType];
 
-export const Side = {
+export const SideType = {
   BUYLIMIT: 0,
   SELL: 1
 }
-export type Side = typeof Side[keyof typeof Side];
+export type SideType = typeof SideType[keyof typeof SideType];
 
-export const Tif = {
+export const TifType = {
   DAY: 0,
   GTD: 1,
   GTC: 2,
 }
-export type Tif = typeof Tif[keyof typeof Tif];
+export type TifType = typeof TifType[keyof typeof TifType];
 
 export const ApprovalState = {
   UNKNOWN: 0,
