@@ -169,7 +169,6 @@ export function useConnectionState(config?: ManagerConfig) {
     };
 
     const handleDisconnect = () => {
-      console.log("EVENT: disconnected");
       setConnector(null);
       setState({ accounts: [], chainId: null, connected: false });
       localStorage.removeItem(STORAGE_KEYS.CONNECTOR_TYPE);

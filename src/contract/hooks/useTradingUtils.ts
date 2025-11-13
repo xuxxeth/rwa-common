@@ -15,7 +15,7 @@ export function useTradeUtils(trading?: Address) {
   const { callWithGasPrice } = useCallWithGasPrice();
 
   const cancelOrder = useCallback(
-    async (orderId: number, options?: { wait?: boolean }) => {
+    async (orderId: string, options?: { wait?: boolean }) => {
       try {
         if (tradingContract && account && publicClient) {
           // @ts-ignore
@@ -25,14 +25,11 @@ export function useTradeUtils(trading?: Address) {
           if (options?.wait) {
             // 2. 等待交易上链并确认
             const receipt = await waitForTransactionReceipt(publicClient, hash);
-
-            console.log("订单撤销 ✅", receipt);
             return {
               code: RESPONSE_CODE.SUCCESS,
               data: receipt,
             };
           }
-          console.log("订单撤销 ✅", hash);
           return {
             code: RESPONSE_CODE.SUCCESS,
             data: { transactionHash: hash },

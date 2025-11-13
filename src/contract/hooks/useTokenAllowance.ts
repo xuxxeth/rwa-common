@@ -20,7 +20,7 @@ export function useGetTokenAllowance(
 }
 
 export function useTokenAllowance() {
-  const { publicClient, walletClient } = useClient()
+  const { publicClient } = useClient()
   const { callWithGasPrice } = useCallWithGasPrice()
   
   const getAllowance = useCallback(async (token: Address | string, owner: Address | string, spender: Address | string) => {

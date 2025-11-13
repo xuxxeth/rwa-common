@@ -23,7 +23,6 @@ export function useTrading(token: Address, spender?: Address, amount: BigInt = B
       if (tradingContract && account && publicClient) {
         if (approvalState !== ApprovalState.APPROVED) {
           const hash = await approveCallback()
-          console.log(hash)
           if (!hash) {
             return {
               code: RESPONSE_CODE.ERROR,
@@ -35,7 +34,6 @@ export function useTrading(token: Address, spender?: Address, amount: BigInt = B
           } 
           // 等待交易确认
           const receipt = await waitForTransactionReceipt(publicClient, hash)
-          console.log("交易完成 ✅", receipt)
           if (receipt.status === 'success') {
             refetchAllowance()
             return {
@@ -88,7 +86,6 @@ export function useTrading(token: Address, spender?: Address, amount: BigInt = B
         if (options?.wait) {
           // 2. 等待交易上链并确认
           const receipt = await waitForTransactionReceipt(publicClient, hash)
-          console.log("交易完成 ✅", receipt)
           if (receipt.status === 'success') {
             refetchAllowance()
             return {
@@ -119,7 +116,6 @@ export function useTrading(token: Address, spender?: Address, amount: BigInt = B
         }
       };
     } catch (error: any) {
-      console.log(error.toString())
       let errorMessage: any = getUserRejection(error.toString())
       if (!errorMessage || !errorMessage.code) {
         errorMessage = extractErrorNameAndCode(error.toString());

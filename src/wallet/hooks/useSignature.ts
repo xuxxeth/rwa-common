@@ -56,7 +56,6 @@ export async function getNonce(client: { getTransactionCount: (arg0: { address: 
 
   try {
     const nonce = await client.getTransactionCount({ address });
-    console.log("当前 nonce:", nonce);
     return nonce
   } catch (error) {
     // 如果获取失败，就生成随机 nonce

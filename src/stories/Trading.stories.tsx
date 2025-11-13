@@ -16,6 +16,8 @@ import { useSignature } from '../wallet/hooks/useSignature';
 import { useTokenBalances } from '../wallet/index'
 import { Address, parseEther } from 'viem';
 import { RESPONSE_CODE } from '../utils/constants';
+import { SessionType, SideType, TifType, TradeType } from '../contract/types';
+import { parseAmount } from '../utils';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -73,11 +75,11 @@ const TradingDemo: React.FC = () => {
   const applec = '0xb3D46fa174Fc8B391F3675dD2Ea875aa0bCD2992'
 
   const payToken = useMemo(() => action === 'buy' ? usdt : applec, [action] )
-  const amount = useMemo(() => (BigInt(limitPrice) * BigInt(size)) * BigInt((10 ** 6)), [limitPrice, size])
+  const amount = useMemo(() => (BigInt(limitPrice) * BigInt(size)), [limitPrice, size])
 
   const paymentToken = useMemo(() => action === 'buy' ? usdt : applec, [action, applec, usdt])
 
-  const { approvalState, allowance, refetchAllowance, approve, placeOrder,  } = useTrading(paymentToken, trading, BigInt(amount))
+  const { approvalState, allowance, refetchAllowance, approve, placeOrder,  } = useTrading(paymentToken, trading, BigInt(parseAmount(amount.toString(), 6)))
   console.log(approvalState, allowance)
   const { publicClient} = useClient()
   const { cancelOrder } = useTradeUtils(trading)
@@ -106,16 +108,16 @@ const TradingDemo: React.FC = () => {
   const handlePlaceOrder = useCallback(async () => {
     const params = {
       stockId: '1',
-      tradeType: '0',
-      side: action === 'buy' ? '0' : '1',
-      tif: '0',
-      sessionType: '0',
+      tradeType: TradeType.LIMIT,
+      side: action === 'buy' ? SideType.BUYLIMIT : SideType.SELL,
+      tif: TifType.DAY,
+      sessionType: SessionType.DEFAULT,
       paymentToken: usdt, // address
       validDate: '1', // s
       networkFee: '0', // 0.002
       amount: '0', // 10 usdt
-      price: '270000000',   // 1 usdt
-      size: '5000000'    // 10
+      price: parseAmount(limitPrice, 6),   // 1 usdt
+      size: parseAmount(size, 6)    // 10
     }
     console.log('params: ', params)
     const res = await placeOrder(params, {wait: true, value: parseEther('0.0001').toString()})
@@ -124,7 +126,7 @@ const TradingDemo: React.FC = () => {
       // @ts-ignore
       alert(res.data.message)
     }
-  }, [placeOrder, limitPrice, amount, payToken, action])
+  }, [placeOrder, limitPrice, size, amount, payToken, action])
 
   console.log('approvalState: ', approvalState)
   console.log('allowance: ', allowance)
@@ -218,7 +220,7 @@ const TradingDemo: React.FC = () => {
       </div>
       <div className=' flex mt-5'>
         <Button onClick={async () => {
-          const res = await cancelOrder(Number(orderId), { wait: true })
+          const res = await cancelOrder(orderId, { wait: true })
           console.log(res)
           if (res.code !== 9200) {
             // @ts-ignore

@@ -214,8 +214,6 @@ export class EvmConnector implements IEvmConnector {
       const accounts = (await provider.request({
         method: "eth_requestAccounts",
       })) as Address[];
-
-      console.log("Accounts obtained:", accounts);
       return accounts;
     } catch (error: any) {
       if (error.code === USER_REJECTED_ERROR_CODE) {
