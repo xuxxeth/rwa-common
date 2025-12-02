@@ -78,11 +78,11 @@ export function useTrading(token: Address, spender?: Address, amount: BigInt = B
     refetchAllowance
   ])
 
-  const placeOrder = useCallback(async (params: PlaceOrderProps, options?: { wait?: boolean, value?: string}) => {
+  const placeOrder = useCallback(async (params: PlaceOrderProps, options?: { wait?: boolean, value?: string, skipSimulate?: boolean}) => {
     try {
       if (tradingContract && account && publicClient) {
         // @ts-ignore
-        const hash = await callWithGasPrice(tradingContract, 'placeOrder', [params], {value: options?.value})
+        const hash = await callWithGasPrice(tradingContract, 'placeOrder', [params], {value: options?.value, skipSimulate: options?.skipSimulate})
         if (options?.wait) {
           // 2. 等待交易上链并确认
           const receipt = await waitForTransactionReceipt(publicClient, hash)

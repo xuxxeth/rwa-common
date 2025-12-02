@@ -72,7 +72,7 @@ const TradingDemo: React.FC = () => {
   const [trading, setTrading] = useState<Address | undefined>(undefined)
 
   const usdt = '0xbeD5856646F1faBDFc565F47f8Ea18685466B745'
-  const applec = '0xb3D46fa174Fc8B391F3675dD2Ea875aa0bCD2992'
+  const applec = '0xf9457b7d8e83CD16CEeBc3bc914824d616166A5a'
 
   const payToken = useMemo(() => action === 'buy' ? usdt : applec, [action] )
   const amount = useMemo(() => (BigInt(limitPrice) * BigInt(size)), [limitPrice, size])
@@ -120,7 +120,7 @@ const TradingDemo: React.FC = () => {
       size: parseAmount(size, 6)    // 10
     }
     console.log('params: ', params)
-    const res = await placeOrder(params, {wait: true, value: parseEther('0.0001').toString()})
+    const res = await placeOrder(params, {wait: true, value: parseEther('0.0001').toString(), skipSimulate: true})
     console.log(res)
     if (res && res.code !== 9200) {
       // @ts-ignore
