@@ -15,13 +15,13 @@ export function useTradeUtils(trading?: Address) {
   const { callWithGasPrice } = useCallWithGasPrice();
 
   const cancelOrder = useCallback(
-    async (orderId: string, options?: { wait?: boolean }) => {
+    async (orderId: string, options?: { wait?: boolean, skipSimulate?: boolean }) => {
       try {
         if (tradingContract && account && publicClient) {
           // @ts-ignore
           const hash = await callWithGasPrice(tradingContract, "cancelOrder", [
             orderId,
-          ]);
+          ], {skipSimulate: options?.skipSimulate});
           if (options?.wait) {
             // 2. 等待交易上链并确认
             const receipt = await waitForTransactionReceipt(publicClient, hash);
