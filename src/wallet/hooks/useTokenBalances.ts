@@ -29,7 +29,7 @@ export function useTokenBalances() {
           return [];
         }
       }
-      console.log('Enter No publicClient')
+      console.log("Enter No publicClient");
       return [];
     },
     [publicClient]
@@ -53,8 +53,28 @@ export function useTokenBalances() {
     [publicClient]
   );
 
+  // 获取原生代币的余额
+  const getBalance = useCallback(
+    async (account: Address) => {
+      if (publicClient) {
+        try {
+          const result = await publicClient.getBalance({
+            address: account,
+          });
+          return result;
+        } catch (error) {
+          console.log("getBalance error", error);
+          return 0n;
+        }
+      }
+      return 0n;
+    },
+    [publicClient]
+  );
+
   return {
     getTokenBalances,
     getTokenBalancesByTradingContract,
+    getBalance,
   };
 }
