@@ -12,7 +12,8 @@ import {
   custom,
   http,
 } from "viem";
-import EthereumProvider from "@walletconnect/ethereum-provider";
+// import EthereumProvider from "@walletconnect/ethereum-provider";
+import UniversalProvider from "@walletconnect/universal-provider";
 import QRCodeStyling from "qr-code-styling";
 import { bscTestnet } from "../config/chains";
 import { walletConnectWallet } from "../config/wallet";
@@ -34,7 +35,7 @@ interface WalletConnectConfig {
 export class WalletConnectConnector implements IWalletConnectConnector {
   private static instance: WalletConnectConnector | null = null;
 
-  public provider?: EthereumProvider;
+  public provider?: UniversalProvider;
   private connectorType = ConnectorType.WalletConnect;
 
   // 私有属性
@@ -76,7 +77,6 @@ export class WalletConnectConnector implements IWalletConnectConnector {
   async connect(
     wallet: WalletConfig = walletConnectWallet
   ): Promise<WalletState> {
-
     // 如果有二维码，清空上次的二维码数据
     this.updateQrCodeData(null);
 
@@ -87,47 +87,77 @@ export class WalletConnectConnector implements IWalletConnectConnector {
       throw new Error("WalletConnect provider not initialized");
     }
 
-    // conncted 字段状态不准确，使用 provider.session 来判断
-    const hasValidSession =
-      this.provider.session &&
-      this.provider.session.expiry > Math.floor(Date.now() / 1000);
-    if (hasValidSession) {
-      // 尝试获取账户信息来验证连接状态
+    // 1. 检查是否存在有效的 Session
+    // UniversalProvider 的 session 属性即代表当前激活的会话
+    if (this.provider.session) {
       try {
-        const accounts: string[] = await this.provider.request({
-          method: "eth_accounts",
-        });
-        if (accounts && accounts.length > 0) {
-          console.log("Session is active, updating state...");
+        const expiry = this.provider.session.expiry;
+        const now = Math.floor(Date.now() / 1000);
+
+        // 检查 Session 是否过期
+        if (expiry > now) {
+          console.log("Session is active, restoring connection...");
+
+          // 恢复状态
           await this.updateStateFromProvider();
-          return this.state;
+
+          // 确保 connected 状态被正确设置
+          if (this.state.connected && this.state.accounts.length > 0) {
+            return this.state;
+          }
         }
       } catch (error) {
-        console.warn("Error validating connection:", error);
+        console.warn("Error validating existing session:", error);
+        // 如果恢复失败，继续执行后面的连接逻辑，不要 throw
       }
     }
 
     try {
-      // 如果配置了不显示二维码弹窗，监听URI事件
+      // 2. 监听二维码显示事件
       this.provider.on("display_uri", async (uri: string) => {
         const deepLink = this.generateWalletDeepLink(uri, wallet);
         const dataUrl = await this.generateQRCodeDataUrl(deepLink, wallet);
         this.updateQrCodeData({ uri, dataUrl });
       });
 
-      // 启用Provider连接
-      await this.provider.enable();
+      // 3. 构造 EIP-155 (EVM) 命名空间配置
+      // 这是让 UniversalProvider 表现得像 EthereumProvider 的关键
+      const chains = this.config.chains.map((chain) => chain.id);
+      const rpcMap = this.config.chains.reduce((acc, chain) => {
+        acc[chain.id] = chain.rpcUrls.default.http[0];
+        return acc;
+      }, {} as Record<number, string>);
 
-      // 更新状态
+      // 4. 发起连接
+      // UniversalProvider 使用 connect 方法，而不是 enable
+      await this.provider.connect({
+        namespaces: {
+          eip155: {
+            chains: chains.map((id) => `eip155:${id}`),
+            events: ["chainChanged", "accountsChanged"],
+            methods: [
+              "eth_sendTransaction",
+              "eth_signTransaction",
+              "eth_sign",
+              "personal_sign",
+              "eth_signTypedData",
+              "eth_signTypedData_v4",
+            ],
+            rpcMap: rpcMap,
+          },
+        },
+      });
+
+      // 5. 连接成功后，立即同步 Provider 的 Session 数据到本地的 State
       await this.updateStateFromProvider();
 
+      // 6. 返回最新的钱包状态
       return this.state;
     } catch (error) {
       console.error("WalletConnect connection failed:", error);
+      this.disconnect();
       throw error;
     }
-
-    return this.state;
   }
 
   private generateWalletDeepLink(uri: string, wallet: WalletConfig) {
@@ -151,6 +181,7 @@ export class WalletConnectConnector implements IWalletConnectConnector {
       }
     }
 
+    // 手动清理本地状态
     this.reset();
     this.emit("disconnect");
   }
@@ -214,7 +245,7 @@ export class WalletConnectConnector implements IWalletConnectConnector {
   }
 
   // 获取Provider
-  getProvider(): EthereumProvider | null {
+  getProvider(): UniversalProvider | null {
     return this.provider ?? null;
   }
 
@@ -242,28 +273,8 @@ export class WalletConnectConnector implements IWalletConnectConnector {
   private async initializeProvider(): Promise<void> {
     if (this.provider) return;
 
-    // const requiredChains = this.config.chains.map((chain) => chain.id);
-    // const optionalChains = this.config.chains
-    //   .filter((chain) => chain.id !== this.config.defaultChainId)
-    //   .map((chain) => chain.id);
-
-    this.provider = await EthereumProvider.init({
+    this.provider = await UniversalProvider.init({
       projectId: this.config.projectId,
-      chains: [bscTestnet.id],
-      // optionalChains: optionalChains,
-      methods: [
-        "eth_sendTransaction",
-        "eth_signTransaction",
-        "eth_sign",
-        "personal_sign",
-        "eth_signTypedData",
-      ],
-      events: ["chainChanged", "accountsChanged"],
-      showQrModal: false,
-      qrModalOptions: this.config.qrModalOptions,
-      rpcMap: {
-        [bscTestnet.id]: bscTestnet.rpcUrls.default.http[0],
-      },
       metadata: {
         name: "CyberAlpha",
         description: "CyberAlpha",
@@ -291,34 +302,42 @@ export class WalletConnectConnector implements IWalletConnectConnector {
     if (!this.provider) return;
 
     try {
-      const accounts = (await this.provider.request({
-        method: "eth_accounts",
-      })) as string[];
-
-      const chainId = (await this.provider.request({
-        method: "eth_chainId",
-      })) as number;
-
-      // 如果用户在授权连接的时候默认没有选择 bsctestnet, 这里chainId 会是 1
-      // 但之后会切换到 bsctestnet, 所以这里需要判断一下
-      if(chainId !== bscTestnet.id) {
-        console.log('Default chainId is not bsctestnet, chainId:', chainId, ', and wait for switch to bsctestnet')
-        return
+      // 优化：直接从 Session 中获取状态，而不是发送 RPC 请求
+      const session = this.provider.session;
+      if (!session) {
+        this.state = {
+          accounts: [],
+          chainId: null,
+          connected: false,
+        };
+        return;
       }
 
-      this.state = {
-        accounts: accounts as Address[],
-        chainId,
-        // provider.connected 这个字段在处理还有有效期的session的时候，不准确，
-        // 即便有处于有效期的 session，这个字段也为 false
-        // 所以这里额外根据 accounts 是否为false来判断是否连接
-        connected: this.provider.connected
-          ? true
-          : accounts.length > 0
-          ? true
-          : false,
-      };
+      // 获取 eip155 命名空间下的账户
+      const namespace = session.namespaces["eip155"];
+      if (
+        !namespace ||
+        !namespace.accounts ||
+        namespace.accounts.length === 0
+      ) {
+        this.state.connected = false;
+        return;
+      }
 
+      // accounts 格式为 ["eip155:1:0x...", "eip155:56:0x..."]
+      const accounts = namespace.accounts.map((account) => {
+        const parts = account.split(":");
+        return parts[2] as Address; // 取地址部分
+      });
+
+      // 通常默认取第一个 account 的 chainId
+      const firstAccount = namespace.accounts[0];
+      const defaultChainId = parseInt(firstAccount.split(":")[1], 10);
+      this.state = {
+        accounts: [...new Set(accounts)], // 去重
+        chainId: defaultChainId,
+        connected: true,
+      };
     } catch (error) {
       console.error("Failed to update state from provider:", error);
     }
@@ -335,7 +354,8 @@ export class WalletConnectConnector implements IWalletConnectConnector {
 
     // 链变更事件
     this.provider.on("chainChanged", (chainId: string) => {
-      const newChainId = parseInt(chainId, 16);
+      const newChainId =
+        typeof chainId === "string" ? parseInt(chainId, 16) : chainId;
       if (newChainId !== this.state.chainId) {
         this.state.chainId = newChainId;
         this.emit("chainChanged", newChainId);
@@ -349,9 +369,15 @@ export class WalletConnectConnector implements IWalletConnectConnector {
       this.emit("disconnect", error);
     });
 
+    // 协议层会话删除事件(更可靠的断开新号)
+    this.provider.on("session_delete", () => {
+      console.log("WalletConnect session deleted");
+      this.reset();
+      this.emit("disconnect");
+    });
+
     // 连接事件
     this.provider.on("connect", () => {
-      const provider = this.provider;
       this.updateQrCodeData(null);
       this.updateStateFromProvider();
     });

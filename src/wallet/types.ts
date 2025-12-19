@@ -1,6 +1,6 @@
 import type { Address, Chain } from "viem";
 import { bsc, bscTestnet, xLayer, xLayerTestnet } from "./config/chains";
-import type EthereumProvider from "@walletconnect/ethereum-provider";
+import type UniversalProvider from "@walletconnect/universal-provider";
 
 export type EIP1193Provider = {
   request(args: { method: string; params?: any[] | object }): Promise<any>;
@@ -66,7 +66,7 @@ export interface IWalletConnector {
   getPublicClient(chainId?: number): any;
   getWalletClient(chainId?: number): any;
   getConnectorType(): ConnectorType | undefined;
-  getProvider(): EIP1193Provider | EthereumProvider | null;
+  getProvider(): EIP1193Provider | UniversalProvider | null;
   on(
     event: "accountsChanged" | "chainChanged" | "disconnect" | "qrCodeDataChanged",
     cb: (...args: any[]) => void

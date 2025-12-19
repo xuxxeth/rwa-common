@@ -157,15 +157,15 @@ export function useConnectionState(config?: ManagerConfig) {
 
     const handleChainChanged = (chainId: number) => {
       // 这里要判断一下，如果是非支持的链，则不进行存储操作
-      const chains = config?.chains || []
-      const nowChain = chains.find(chain => chain.id === chainId)
+      const chains = config?.chains || [];
+      const nowChain = chains.find((chain) => chain.id === chainId);
       let _chainId: number | null = null;
       if (nowChain) {
-        _chainId = nowChain.id
-      } 
-      
+        _chainId = nowChain.id;
+      }
+
       setState((prev) => ({ ...prev, chainId: _chainId }));
-      storage.setItem(STORAGE_KEYS.DEFAULT_CHAIN_ID, _chainId || '');
+      storage.setItem(STORAGE_KEYS.DEFAULT_CHAIN_ID, _chainId || "");
     };
 
     const handleDisconnect = () => {

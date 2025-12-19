@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Abi, Address, erc20Abi, getAddress } from 'viem'
+import { Abi, Address, erc20Abi } from 'viem'
 import type { Account, Chain, ContractFunctionArgs, ContractFunctionName, EstimateContractGasParameters } from 'viem'
 import { useClient } from '../../wallet/hooks/useClient'
 import { useCallWithGasPrice } from './useCallWithGasPrice'

@@ -1,6 +1,5 @@
 import type { Chain } from 'viem'
 import { defineChain } from 'viem'
-import { xphereTestnet } from 'viem/chains'
 
 export const bsc = defineChain({
   id: 56,

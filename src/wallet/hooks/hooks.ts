@@ -45,11 +45,13 @@ export function useAccount() {
 export function useQrCodeData() {
   const connector = useConnector();
   const [qrCodeData, setQrCodeData] = useState<QrCodeData | null>(() => {
-    if(connector instanceof WalletConnectConnector) {
-      return connector.getQrCodeData()
+    if (connector instanceof WalletConnectConnector) {
+      return connector.getQrCodeData();
     }
-    return null
+    return null;
   });
+
+  console.log("connector", connector);
 
   useEffect(() => {
     if (!connector) return;
