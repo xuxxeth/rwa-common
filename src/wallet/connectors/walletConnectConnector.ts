@@ -120,8 +120,12 @@ export class WalletConnectConnector implements IWalletConnectConnector {
 
       // 3. 构造 EIP-155 (EVM) 命名空间配置
       // 这是让 UniversalProvider 表现得像 EthereumProvider 的关键
-      const chains = this.config.chains.map((chain) => chain.id);
-      const rpcMap = this.config.chains.reduce((acc, chain) => {
+
+      // 确保只使用 defaultChainId 或第一个链
+      const chainId = this.config.defaultChainId || this.config.chains[0].id;
+      const chains = this.config.chains.filter((chain) => chain.id === chainId);
+      const chainIds = chains.map((chain) => chain.id);
+      const rpcMap = chains.reduce((acc, chain) => {
         acc[chain.id] = chain.rpcUrls.default.http[0];
         return acc;
       }, {} as Record<number, string>);
@@ -131,7 +135,7 @@ export class WalletConnectConnector implements IWalletConnectConnector {
       await this.provider.connect({
         namespaces: {
           eip155: {
-            chains: chains.map((id) => `eip155:${id}`),
+            chains: chainIds.map((id) => `eip155:${id}`),
             events: ["chainChanged", "accountsChanged"],
             methods: [
               "eth_sendTransaction",
@@ -332,18 +336,35 @@ export class WalletConnectConnector implements IWalletConnectConnector {
         return;
       }
 
-      // accounts 格式为 ["eip155:1:0x...", "eip155:56:0x..."]
-      const accounts = namespace.accounts.map((account) => {
-        const parts = account.split(":");
-        return parts[2] as Address; // 取地址部分
+      const accounts = namespace.accounts.map(
+        (acc) => acc.split(":")[2]
+      ) as Address[];
+
+      const targetChainId =
+        this.config.defaultChainId || this.config.chains[0]?.id;
+
+      let activeChainId: number = targetChainId;
+
+      // 尝试从 accounts 中找出匹配 defaultChainId 的条目
+      const matchedAccount = namespace.accounts.find((account) => {
+        const chainId = parseInt(account.split(":")[1], 10);
+        return chainId === targetChainId;
       });
 
-      // 通常默认取第一个 account 的 chainId
-      const firstAccount = namespace.accounts[0];
-      const defaultChainId = parseInt(firstAccount.split(":")[1], 10);
+      if (matchedAccount) {
+        // 如果 Session 里确实包含目标链，那就用它
+        activeChainId = targetChainId;
+      } else {
+        // 如果不包含（比如 MetaMask 只有 Mainnet），就取第一个可用的
+        const firstAccount = namespace.accounts[0];
+        activeChainId = parseInt(firstAccount.split(":")[1], 10);
+      }
+
+      this.provider.setDefaultChain(`eip155:${activeChainId}`);
+
       this.state = {
         accounts: [...new Set(accounts)], // 去重
-        chainId: defaultChainId,
+        chainId: activeChainId,
         connected: true,
       };
     } catch (error) {
@@ -361,9 +382,16 @@ export class WalletConnectConnector implements IWalletConnectConnector {
     });
 
     // 链变更事件
-    this.provider.on("chainChanged", (chainId: string) => {
-      const newChainId =
-        typeof chainId === "string" ? parseInt(chainId, 16) : chainId;
+    this.provider.on("chainChanged", async (chainId: string) => {
+      const newChainId = parseInt(chainId, 10);
+
+      const activeChainId = this.state.chainId;
+
+      if (activeChainId && activeChainId !== newChainId) {
+        this.provider?.setDefaultChain(`eip155:${activeChainId}`);
+        return;
+      }
+
       if (newChainId !== this.state.chainId) {
         this.state.chainId = newChainId;
         this.emit("chainChanged", newChainId);
