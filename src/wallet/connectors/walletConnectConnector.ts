@@ -12,11 +12,9 @@ import {
   custom,
   http,
 } from "viem";
-// import EthereumProvider from "@walletconnect/ethereum-provider";
-import UniversalProvider from "@walletconnect/universal-provider";
 import QRCodeStyling from "qr-code-styling";
-import { bscTestnet } from "../config/chains";
 import { walletConnectWallet } from "../config/wallet";
+import type UniversalProvider from "@walletconnect/universal-provider";
 
 interface WalletConnectConfig {
   projectId: string;
@@ -273,18 +271,28 @@ export class WalletConnectConnector implements IWalletConnectConnector {
   private async initializeProvider(): Promise<void> {
     if (this.provider) return;
 
-    this.provider = await UniversalProvider.init({
-      projectId: this.config.projectId,
-      metadata: {
-        name: "CyberAlpha",
-        description: "CyberAlpha",
-        url: window.location.origin,
-        icons: ["https://test.cyberalpha.cc/images/logo_dark.png"],
-      },
-    });
+    try {
+      // 动态导入：只有在运行时才加载这个巨大的库
+      const { default: UniversalProvider } = await import(
+        "@walletconnect/universal-provider"
+      );
 
-    // 订阅事件
-    this.subscribeToEvents();
+      this.provider = await UniversalProvider.init({
+        projectId: this.config.projectId,
+        metadata: {
+          name: "CyberAlpha",
+          description: "CyberAlpha",
+          url: window.location.origin,
+          icons: ["https://test.cyberalpha.cc/images/logo_dark.png"],
+        },
+      });
+
+      // 订阅事件
+      this.subscribeToEvents();
+    } catch (error) {
+      console.error("Failed to initialize WalletConnect provider:", error);
+      throw error;
+    }
   }
 
   private updateQrCodeData(qrCodeData: QrCodeData | null) {
