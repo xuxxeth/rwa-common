@@ -28,6 +28,7 @@ export default defineConfig({
         "react/jsx-runtime",
         "typescript",
         "qr-code-styling",
+        "viem",
       ],
       output: [
         // 配置 1: ESM
