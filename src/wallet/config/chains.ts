@@ -1,4 +1,3 @@
-import type { Chain } from 'viem'
 import { defineChain } from 'viem'
 
 export const bsc = defineChain({
@@ -7,7 +6,7 @@ export const bsc = defineChain({
   network: 'bsc',
   nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
   rpcUrls: {
-    default: { http: ['https://bsc-dataseed.bnbchain.org'] },
+    default: { http: ['https://bsc-dataseed.bnbchain.org', 'https://bsc-dataseed1.bnbchain.org', 'https://bsc-dataseed1.ninicoin.io'] },
     public: { http: ['https://bsc-dataseed.bnbchain.org'] }
   },
   blockExplorers: {
@@ -21,8 +20,8 @@ export const bscTestnet = defineChain({
   network: 'bsc-testnet',
   nativeCurrency: { name: 'tBNB', symbol: 'tBNB', decimals: 18 },
   rpcUrls: {
-    default: { http: ['https://bsc-testnet-dataseed.bnbchain.org'] },
-    public: { http: ['https://bsc-testnet-dataseed.bnbchain.org'] }
+    default: { http: ['https://data-seed-prebsc-2-s2.bnbchain.org:8545', 'https://data-seed-prebsc-2-s1.bnbchain.org:8545', 'https://data-seed-prebsc-2-s3.bnbchain.org:8545'] },
+    public: { http: ['https://data-seed-prebsc-1-s1.bnbchain.org:8545'] }
   },
   blockExplorers: {
     default: { name: 'BscScan', url: 'https://testnet.bscscan.com' }
@@ -42,7 +41,7 @@ export const xLayer = defineChain({
   network: 'xlayer',
   nativeCurrency: { name: 'OKB', symbol: 'OKB', decimals: 18 },
   rpcUrls: {
-    default: { http: ['https://rpc.xlayer.tech'] },
+    default: { http: ['https://rpc.xlayer.tech', 'https://xlayerrpc.okx.com'] },
     public: { http: ['https://rpc.xlayer.tech'] }
   },
   blockExplorers: {
