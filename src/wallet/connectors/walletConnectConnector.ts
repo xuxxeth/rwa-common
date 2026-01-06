@@ -284,10 +284,10 @@ export class WalletConnectConnector implements IWalletConnectConnector {
       this.provider = await UniversalProvider.init({
         projectId: this.config.projectId,
         metadata: {
-          name: "CyberAlpha",
-          description: "CyberAlpha",
+          name: "TIKO",
+          description: "TIKO",
           url: window.location.origin,
-          icons: ["https://test.cyberalpha.cc/images/logo_dark.png"],
+          icons: [`${window.location.origin}/images/logo_dark.png`],
         },
       });
 

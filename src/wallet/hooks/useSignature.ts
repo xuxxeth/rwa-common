@@ -4,7 +4,7 @@ import { useAccount } from "./hooks"
 import { signMessage } from "viem/actions"
 import { Hex } from 'viem'
 
-const NONCE_STORAGE_KEY = 'cyberalpha:nonces'
+const NONCE_STORAGE_KEY = 'tiko:nonces'
 
 type NonceCache = Record<string, number>
 
@@ -66,7 +66,7 @@ export async function getNonce(client: { getTransactionCount: (arg0: { address: 
 
 
 export function generateSignMessage(nonce: number, expires: number): string {
-  return `CyberAlpha Signature Verification\nNonce: ${nonce}\nExpires: ${expires}`
+  return `TIKO Signature Verification\nNonce: ${nonce}\nExpires: ${expires}`
 }
 
 export function useSignature() {
