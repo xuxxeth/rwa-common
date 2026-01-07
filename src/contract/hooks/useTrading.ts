@@ -82,7 +82,11 @@ export function useTrading(token: Address, spender?: Address, amount: BigInt = B
     try {
       if (tradingContract && account && publicClient) {
         // @ts-ignore
-        const hash = await callWithGasPrice(tradingContract, 'placeOrder', [params], {value: options?.value, skipSimulate: options?.skipSimulate})
+        const hash = await callWithGasPrice(tradingContract, 'placeOrder', [params], {
+          value: options?.value, 
+          skipSimulate: options?.skipSimulate,
+          gas: 300000n
+        })
         if (options?.wait) {
           // 2. 等待交易上链并确认
           const receipt = await waitForTransactionReceipt(publicClient, hash)
