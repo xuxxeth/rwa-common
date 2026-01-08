@@ -17,18 +17,42 @@ export function useTradeUtils(trading?: Address) {
   const cancelOrder = useCallback(
     async (orderId: string, options?: { wait?: boolean, skipSimulate?: boolean }) => {
       try {
+        console.log(tradingContract, account, publicClient)
         if (tradingContract && account && publicClient) {
           // @ts-ignore
           const hash = await callWithGasPrice(tradingContract, "cancelOrder", [
             orderId,
-          ], {skipSimulate: options?.skipSimulate, gas: 100000n});
+          ], {skipSimulate: options?.skipSimulate});
+
           if (options?.wait) {
             // 2. 等待交易上链并确认
-            const receipt = await waitForTransactionReceipt(publicClient, hash);
-            return {
-              code: RESPONSE_CODE.SUCCESS,
-              data: receipt,
-            };
+            const waitForReceiptWithRetry = async (hash: `0x${string}`) => {
+              const maxAttempts = 5
+              const retryDelayMs = 1000
+              let attempts = 0
+
+              while (attempts < maxAttempts) {
+                try {
+                  const receipt = await waitForTransactionReceipt(publicClient, { hash, retryCount: 5 })
+                  if (receipt.status === 'success') {
+                    return {
+                      code: RESPONSE_CODE.SUCCESS,
+                      data: receipt,
+                    };
+                  }
+                  
+                } catch (err) {
+                  console.log(err)
+                  attempts++
+                  if (attempts >= maxAttempts) break
+                  await new Promise(res => setTimeout(res, retryDelayMs))
+                }
+              }
+
+              return { code: RESPONSE_CODE.ERROR, data: { errorCode: ERROR_CODE.TXERROR, name: 'wait timeout' } }
+            }
+            return await waitForReceiptWithRetry(hash.hash)
+            
           }
           return {
             code: RESPONSE_CODE.SUCCESS,
@@ -44,6 +68,7 @@ export function useTradeUtils(trading?: Address) {
           
         };
       } catch (error: any) {
+        console.log(error)
         // const errorMessage = parseErrorFromMessage(error);
         let errorMessage: any = getUserRejection(error.toString())
         if (!errorMessage || !errorMessage.code) {

@@ -89,21 +89,36 @@ export function useTrading(token: Address, spender?: Address, amount: BigInt = B
         })
         if (options?.wait) {
           // 2. 等待交易上链并确认
-          const receipt = await waitForTransactionReceipt(publicClient, hash)
-          if (receipt.status === 'success') {
-            refetchAllowance()
-            return {
-              code: RESPONSE_CODE.SUCCESS,
-              data: receipt,
-            };
+          const waitForReceiptWithRetry = async (hash: `0x${string}`) => {
+            const maxAttempts = 5
+            const retryDelayMs = 1000
+            let attempts = 0
+
+            while (attempts < maxAttempts) {
+              try {
+                const receipt = await waitForTransactionReceipt(publicClient, { hash, retryCount: 5 })
+                if (receipt.status === 'success') {
+                  try {
+                    await refetchAllowance()
+                  } catch (e) {
+                    // optional: log but don't fail the whole flow
+                    console.log('refetchAllowance failed', e)
+                  }
+                  return { code: RESPONSE_CODE.SUCCESS, data: receipt }
+                }
+                return { code: RESPONSE_CODE.ERROR, data: { errorCode: ERROR_CODE.TXERROR, name: 'tx error' } }
+              } catch (err) {
+                console.log(err)
+                attempts++
+                if (attempts >= maxAttempts) break
+                await new Promise(res => setTimeout(res, retryDelayMs))
+              }
+            }
+
+            return { code: RESPONSE_CODE.ERROR, data: { errorCode: ERROR_CODE.TXERROR, name: 'wait timeout' } }
           }
-          return {
-            code: RESPONSE_CODE.ERROR,
-            data: {
-              errorCode: ERROR_CODE.TXERROR,
-              name: 'tx error'
-            },
-          };
+
+          return await waitForReceiptWithRetry(hash.hash)
         }
         
         return {
@@ -120,6 +135,7 @@ export function useTrading(token: Address, spender?: Address, amount: BigInt = B
         }
       };
     } catch (error: any) {
+      console.log(error)
       let errorMessage: any = getUserRejection(error.toString())
       if (!errorMessage || !errorMessage.code) {
         errorMessage = extractErrorNameAndCode(error.toString());

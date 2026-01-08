@@ -79,7 +79,7 @@ const TradingDemo: React.FC = () => {
 
   const paymentToken = useMemo(() => action === 'buy' ? usdt : applec, [action, applec, usdt])
 
-  const { approvalState, allowance, refetchAllowance, approve, placeOrder,  } = useTrading(paymentToken, trading, BigInt(parseAmount(amount.toString(), 6)))
+  const { approvalState, allowance, refetchAllowance, approve, placeOrder,  } = useTrading(paymentToken, trading, action !== 'buy' ? BigInt(parseAmount(size, 6)) : BigInt(parseAmount(amount.toString(), 6)))
   console.log(approvalState, allowance)
   const { publicClient} = useClient()
   const { cancelOrder } = useTradeUtils(trading)
