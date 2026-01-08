@@ -38,6 +38,7 @@ type WalletContextValue = {
   disconnect: () => Promise<void>;
   isConnecting: boolean;
   error: string | null;
+  initialized: boolean;
 };
 
 // 默认配置
@@ -116,6 +117,7 @@ export function useConnectorManager(
   const evmConnector = useRef<EvmConnector | null>(null);
   const walletConnectConnector = useRef<WalletConnectConnector | null>(null);
   const [chains, setChains] = useState<Chain[]>([]);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     if (config?.chains && config.chains.length > 0) {
@@ -123,9 +125,11 @@ export function useConnectorManager(
 
       // 初始化连接器实例
       evmConnector.current = EvmConnector.getInstance(mergedConfig);
+
       walletConnectConnector.current =
         WalletConnectConnector.getInstance(mergedConfig);
       setChains(mergedConfig.chains);
+      setInitialized(true);
     }
   }, [config]);
 
@@ -133,6 +137,7 @@ export function useConnectorManager(
     evmConnector: evmConnector.current,
     walletConnectConnector: walletConnectConnector.current,
     chains,
+    initialized
   };
 }
 
@@ -210,7 +215,7 @@ export function WalletProvider({
 }) {
   // 使用自定义 Hook 管理不同关注点
   const wallets = useWalletDiscovery();
-  const { evmConnector, walletConnectConnector, chains } =
+  const { evmConnector, walletConnectConnector, chains, initialized } =
     useConnectorManager(config);
   const {
     connector,
@@ -240,17 +245,21 @@ export function WalletProvider({
                 "Injected wallet connector or wallet config is required"
               );
             }
-            activeConnector = evmConnector;
-            setConnector(activeConnector);
+
+            // connect 的时候，如果发现已连接钱包，会执行一次 disconnect, disconnect 会清除 connector
             connectionResult = await evmConnector.connect(
               wallet as DiscoveredWallet
             );
+            // 所以在这里设置 connector
+            activeConnector = evmConnector;
+            setConnector(activeConnector);
             break;
 
           case ConnectorType.WalletConnect:
             if (!walletConnectConnector) {
               throw new Error("WalletConnect connector is not initialized");
             }
+            // walletConnect 在用户手机扫码成功之后，才会执行 await 后面的方法，所以在这里设置 connector
             activeConnector = walletConnectConnector;
             setConnector(activeConnector);
             connectionResult = await walletConnectConnector.connect(wallet);
@@ -265,10 +274,12 @@ export function WalletProvider({
         // 持久化连接类型
         localStorage.setItem(STORAGE_KEYS.CONNECTOR_TYPE, type);
       } catch (err) {
+        // 有的 error 不是 Error 类型，但是携带 message 属性
         const errorMessage =
-          err instanceof Error ? err.message : "Connection failed";
+          err instanceof Error
+            ? err.message
+            : (err as { message?: string })?.message || "Connection failed";
         setError(errorMessage);
-        console.error("Wallet connection failed:", err);
         throw err;
       } finally {
         setIsConnecting(false);
@@ -311,6 +322,7 @@ export function WalletProvider({
       disconnect,
       isConnecting,
       error,
+      initialized
     }),
     [
       connector,
@@ -321,6 +333,7 @@ export function WalletProvider({
       disconnect,
       isConnecting,
       error,
+      initialized
     ]
   );
 

@@ -24,10 +24,15 @@ export function useConnect() {
   const { connect } = useWalletContext();
   return useCallback(
     async (type: ConnectorType, wallet?: WalletConfig) => {
-      connect(type, wallet);
+      await connect(type, wallet);
     },
     [connect]
   );
+}
+
+export function useInitialized() {
+  const ctx =  useWalletContext()
+  return ctx.initialized
 }
 
 export function useDisconnect() {
@@ -50,8 +55,6 @@ export function useQrCodeData() {
     }
     return null;
   });
-
-  console.log("connector", connector);
 
   useEffect(() => {
     if (!connector) return;

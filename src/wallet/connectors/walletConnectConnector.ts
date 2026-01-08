@@ -156,7 +156,6 @@ export class WalletConnectConnector implements IWalletConnectConnector {
       // 6. 返回最新的钱包状态
       return this.state;
     } catch (error) {
-      console.error("WalletConnect connection failed:", error);
       this.disconnect();
       throw error;
     }
@@ -175,7 +174,7 @@ export class WalletConnectConnector implements IWalletConnectConnector {
 
   // 断开连接
   async disconnect(): Promise<void> {
-    if (this.provider) {
+    if (this.provider && this.provider.session) {
       try {
         await this.provider.disconnect();
       } catch (error) {
