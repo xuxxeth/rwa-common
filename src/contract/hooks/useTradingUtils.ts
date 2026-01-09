@@ -21,7 +21,7 @@ export function useTradeUtils(trading?: Address) {
           // @ts-ignore
           const tx = await callWithGasPrice(tradingContract, "cancelOrder", [
             orderId,
-          ], {skipSimulate: options?.skipSimulate});
+          ], {skipSimulate: options?.skipSimulate, gas: 100000n});
 
           if (options?.wait) {
             // 2. 等待交易上链并确认
