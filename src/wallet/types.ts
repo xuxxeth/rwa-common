@@ -64,7 +64,6 @@ export interface IWalletConnector {
   getAccounts(): Address[];
   getChainId(): number | null;
   getPublicClient(chainId?: number): any;
-  getWalletClient(chainId?: number): any;
   getConnectorType(): ConnectorType | undefined;
   getProvider(): EIP1193Provider | UniversalProvider | null;
   on(
