@@ -18,6 +18,8 @@ import { Address, parseEther } from 'viem';
 import { RESPONSE_CODE } from '../utils/constants';
 import { SessionType, SideType, TifType, TradeType } from '../contract/types';
 import { parseAmount } from '../utils';
+import { useTradingV2 } from '../contract/hooks/useTradingV2';
+import { useTradeUtilsV2 } from '../contract/hooks/useTradingUtilsV2';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -79,10 +81,12 @@ const TradingDemo: React.FC = () => {
 
   const paymentToken = useMemo(() => action === 'buy' ? usdt : applec, [action, applec, usdt])
 
-  const { approvalState, allowance, refetchAllowance, approve, placeOrder,  } = useTrading(paymentToken, trading, action !== 'buy' ? BigInt(parseAmount(size, 6)) : BigInt(parseAmount(amount.toString(), 6)))
-  console.log(approvalState, allowance)
+  const { approvalState, allowance, txStep, refetchAllowance, placeOrder,  } = useTradingV2(paymentToken, trading, action !== 'buy' ? BigInt(parseAmount(size, 6)) : BigInt(parseAmount(amount.toString(), 6)))
+  console.log(approvalState, allowance, txStep)
+  console.log('txStep: ', txStep, allowance)
   const { publicClient} = useClient()
-  const { cancelOrder } = useTradeUtils(trading)
+  const { cancelOrder, txStep: cancelTxStep } = useTradeUtilsV2(trading)
+  console.log('cancelTxStep: ', cancelTxStep)
 
   useEffect(() => {
      publicClient?.getBlockNumber() 
@@ -124,9 +128,11 @@ const TradingDemo: React.FC = () => {
     console.log(res)
     if (res && res.code !== 9200) {
       // @ts-ignore
-      alert(res.data.message)
+      alert(res.data.message || res.data.errorCode)
+    } else {
+      refetchAllowance()
     }
-  }, [placeOrder, limitPrice, size, amount, payToken, action])
+  }, [placeOrder, refetchAllowance, limitPrice, size, amount, payToken, action, amount])
 
   console.log('approvalState: ', approvalState)
   console.log('allowance: ', allowance)
@@ -185,19 +191,7 @@ const TradingDemo: React.FC = () => {
         <Button onClick={() => setAction('buy')} label='Buy'></Button>
         <Button onClick={() => setAction('sell')} label='Sell'></Button>
         <Button onClick={async () => {
-          if (approvalState === 3) {
-            handlePlaceOrder()
-          } else {
-            const res = await approve()
-            console.log(res)
-            if (res.code !== RESPONSE_CODE.SUCCESS) {
-              // @ts-ignore
-              alert(res.data.message || res.data.name)
-            } else {
-              const _allowance = await refetchAllowance()
-              console.log('New Allowance: ', _allowance)
-            }
-          }
+          handlePlaceOrder()
           
             
         }} label={approvalState === 3 ? 'PlaceOrder' : 'Approve'}></Button>
