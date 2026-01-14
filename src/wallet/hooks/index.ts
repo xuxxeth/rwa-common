@@ -1,5 +1,5 @@
-
 export * from './hooks'
 export * from './useClient'
 export * from './useSignature'
 export * from './useTokenBalances'
+export { useRegulateAssets } from './useRegulateAssets'
