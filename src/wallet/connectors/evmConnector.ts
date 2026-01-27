@@ -78,6 +78,7 @@ export class EvmConnector implements IEvmConnector {
 
   // 连接钱包
   async connect(wallet: DiscoveredWallet): Promise<WalletState> {
+    console.log('wallet debugger: Enter connect wallet');
     try {
       // 断开现有连接
       if (this.wallet) {
@@ -267,6 +268,7 @@ export class EvmConnector implements IEvmConnector {
 
     // 账户变化事件
     this.providerHandlers.accountsChanged = (accounts: Address[]) => {
+      console.log('wallet debugger: accountsChanged event', accounts);
       this.state.accounts = accounts;
       this.state.connected = accounts.length > 0;
       this.emit("accountsChanged", accounts);
@@ -275,6 +277,7 @@ export class EvmConnector implements IEvmConnector {
 
     // 链变化事件
     this.providerHandlers.chainChanged = (chainIdHex: string) => {
+      console.log('wallet debugger: chainChanged event', chainIdHex);
       const chainId = parseInt(chainIdHex, 16);
       this.state.chainId = chainId;
       this.emit("chainChanged", chainId);
@@ -282,7 +285,14 @@ export class EvmConnector implements IEvmConnector {
     };
 
     // 断开连接事件
-    this.providerHandlers.disconnect = () => {
+    this.providerHandlers.disconnect = (error: any) => {
+      console.log('wallet debugger: Enter disconnect event with error', error.code, error);
+      // 忽略 "Chain Changed" 导致的断开 (code 1013)
+      // 1013: Disconnected for chain change (EIP-1193)
+      if (error?.code === 1013) {
+        console.log("wallet debugger: Ignoring disconnect due to chain change");
+        return
+      }
       this.disconnect();
     };
 
