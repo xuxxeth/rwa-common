@@ -138,12 +138,13 @@ export class EvmConnector implements IEvmConnector {
         params: [{ chainId: `0x${targetChainId.toString(16)}` }],
       });
     } catch (error: any) {
+      throw error; // 切换失败，直接抛出错误，外部调用捕获使用
       // 如果链不存在，尝试添加链
-      if (error.code === 4902) {
-        // await this.addChain(targetChainId);
-      } else {
-        throw error;
-      }
+      // if (error.code === 4902) {
+      //   await this.addChain(targetChainId);
+      // } else {
+      //   throw error;
+      // }
     }
 
     this.state.chainId = targetChainId;
