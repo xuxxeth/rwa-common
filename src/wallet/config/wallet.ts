@@ -33,10 +33,7 @@ export function checkIsSameWallet(
   ) {
     return true;
   }
-<<<<<<< HEAD
   
-=======
->>>>>>> develop
   return false;
 }
 
