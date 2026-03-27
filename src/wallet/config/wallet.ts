@@ -10,6 +10,32 @@ export function getWalletUniqueKey(info: WalletInfo) {
   return info.rdns || info.name;
 }
 
+export function checkIsSameWallet(
+  detectedWalletInfo: WalletInfo,
+  configedWalletInfo: WalletInfo,
+) {
+  if (detectedWalletInfo.rdns === configedWalletInfo.rdns) {
+    return
+  };
+  
+  // 例如：在移动端 metamask rdns: io.metamask.mobile
+  // 我们配置的 metamask rdns: io.metamask
+  if (
+    configedWalletInfo.rdns &&
+    detectedWalletInfo.rdns?.includes(configedWalletInfo.rdns)
+  ) {
+    return true;
+  }
+
+  if (
+    detectedWalletInfo.name.toLowerCase() ===
+    configedWalletInfo.name.toLowerCase()
+  ) {
+    return true;
+  }
+  return false;
+}
+
 export const walletConnectWallet = {
   info: {
     name: "WalletConnect",
