@@ -15,7 +15,7 @@ export function checkIsSameWallet(
   configedWalletInfo: WalletInfo,
 ) {
   if (detectedWalletInfo.rdns === configedWalletInfo.rdns) {
-    return
+    return true
   };
   
   // 例如：在移动端 metamask rdns: io.metamask.mobile
@@ -33,6 +33,7 @@ export function checkIsSameWallet(
   ) {
     return true;
   }
+  
   return false;
 }
 
