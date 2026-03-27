@@ -26,7 +26,7 @@ import {
 import { EvmConnector } from "../connectors/evmConnector";
 import { WalletConnectConnector } from "../connectors/walletConnectConnector";
 import storage from "../../utils/storage";
-import { defaultSupportedWallets, getWalletUniqueKey } from "../config/wallet";
+import { defaultSupportedWallets, checkIsSameWallet } from "../config/wallet";
 
 // 类型定义
 type WalletContextValue = {
@@ -59,7 +59,7 @@ const WalletContext = createContext<WalletContextValue | undefined>(undefined);
 // 自定义 Hook：钱包发现和合并
 export function useWalletDiscovery() {
   const [wallets, setWallets] = useState<WalletConfig[]>(
-    defaultSupportedWallets
+    defaultSupportedWallets,
   );
 
   useEffect(() => {
@@ -72,20 +72,19 @@ export function useWalletDiscovery() {
 
         // 合并发现的钱包和默认支持的钱包
         const mergedWallets: WalletConfig[] = defaultSupportedWallets
-          .map((wallet) => {
-            const discoveredWallet = discoveredWallets.find(
-              (w) =>
-                getWalletUniqueKey(w.info) === getWalletUniqueKey(wallet.info)
+          .map((configedWallet) => {
+            const discoveredWallet = discoveredWallets.find((detecedWallet) =>
+              checkIsSameWallet(detecedWallet.info, configedWallet.info),
             );
 
             if (discoveredWallet) {
               return {
-                ...wallet,
+                ...configedWallet,
                 ...discoveredWallet,
                 detected: true,
               };
             }
-            return wallet;
+            return configedWallet;
           })
           .sort((a, b) => {
             // 已检测的钱包排在前面
@@ -112,7 +111,7 @@ export function useWalletDiscovery() {
 
 // 自定义 Hook：连接器管理
 export function useConnectorManager(
-  config?: ManagerConfig & { chains?: Chain[] }
+  config?: ManagerConfig & { chains?: Chain[] },
 ) {
   const evmConnector = useRef<EvmConnector | null>(null);
   const walletConnectConnector = useRef<WalletConnectConnector | null>(null);
@@ -137,7 +136,7 @@ export function useConnectorManager(
     evmConnector: evmConnector.current,
     walletConnectConnector: walletConnectConnector.current,
     chains,
-    initialized
+    initialized,
   };
 }
 
@@ -182,7 +181,7 @@ export function useConnectionState(config?: ManagerConfig) {
     // 订阅事件
     const unsubscribeAccounts = connector.on(
       "accountsChanged",
-      handleAccountsChanged
+      handleAccountsChanged,
     );
     const unsubscribeChain = connector.on("chainChanged", handleChainChanged);
     const unsubscribeDisconnect = connector.on("disconnect", handleDisconnect);
@@ -242,13 +241,13 @@ export function WalletProvider({
           case ConnectorType.Injected:
             if (!evmConnector || !wallet) {
               throw new Error(
-                "Injected wallet connector or wallet config is required"
+                "Injected wallet connector or wallet config is required",
               );
             }
 
             // connect 的时候，如果发现已连接钱包，会执行一次 disconnect, disconnect 会清除 connector
             connectionResult = await evmConnector.connect(
-              wallet as DiscoveredWallet
+              wallet as DiscoveredWallet,
             );
             // 所以在这里设置 connector
             activeConnector = evmConnector;
@@ -285,7 +284,7 @@ export function WalletProvider({
         setIsConnecting(false);
       }
     },
-    [evmConnector, walletConnectConnector]
+    [evmConnector, walletConnectConnector],
   );
 
   // 断开连接
@@ -322,7 +321,7 @@ export function WalletProvider({
       disconnect,
       isConnecting,
       error,
-      initialized
+      initialized,
     }),
     [
       connector,
@@ -333,8 +332,8 @@ export function WalletProvider({
       disconnect,
       isConnecting,
       error,
-      initialized
-    ]
+      initialized,
+    ],
   );
 
   return (
