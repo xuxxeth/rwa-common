@@ -21,7 +21,7 @@ export const SessionType = {
   DEFAULT: 0,
   PRE_MARKET: 1,
   AFTER_HOURS: 2,
-  DARK_POOL: 3,
+  OVERNIGHT: 3,
   PRE_MARKET_AND_AFTER_HOURS: 4
 } as const;
 
