@@ -8,11 +8,12 @@ export type EIP1193Provider = {
   removeListener?: (event: string, listener: (...args: any[]) => void) => void;
   isMetaMask?: boolean;
   isOKXWallet?: boolean;
+  isBitKeep?: boolean;
   isCoinbaseWallet?: boolean;
   id?: string;
 };
 
-export type WalletType = 'walletConnect' | 'binance' | 'okx' | 'metamask';
+export type WalletType = 'walletConnect' | 'binance' | 'okx' | 'metamask' | 'Bitget';
 
 export interface WalletConfig {
   info: WalletInfo;
@@ -27,6 +28,7 @@ export type WalletInfo = {
   name: string;
   icon?: string;
   rdns?: string;
+  id?: string;
 };
 
 export type DiscoveredWallet = {

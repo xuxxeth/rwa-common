@@ -252,6 +252,24 @@ export function WalletProvider({
             // 所以在这里设置 connector
             activeConnector = evmConnector;
             setConnector(activeConnector);
+
+            // 连接成功后，如果钱包当前链不在支持列表中，自动切换到 defaultChainId
+            if (connectionResult.chainId && config?.chains && config.chains.length > 0) {
+              const isSupported = config.chains.some(
+                (c) => c.id === connectionResult.chainId,
+              );
+              if (!isSupported && config.defaultChainId) {
+                try {
+                  await evmConnector.switchChain(config.defaultChainId);
+                  connectionResult = {
+                    ...connectionResult,
+                    chainId: config.defaultChainId,
+                  };
+                } catch (switchError) {
+                  console.warn("Auto switch chain failed:", switchError);
+                }
+              }
+            }
             break;
 
           case ConnectorType.WalletConnect:

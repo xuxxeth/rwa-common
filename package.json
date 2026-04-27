@@ -1,6 +1,6 @@
 {
   "name": "ca-common-web",
-  "version": "0.1.73",
+  "version": "0.1.74",
   "type": "module",
   "main": "dist/es/index.js",
   "module": "dist/es/index.js",
@@ -17,7 +17,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build --config vite.config.lib.ts",
-    "storybook": "storybook dev -p 6006",
+    "storybook": "storybook dev -p 5173 --https --ssl-cert ./cert/cert.pem --ssl-key ./cert/key.pem",
     "build-storybook": "storybook build",
     "serve": "http-server ./storybook-static -p 8080 -P http://localhost:8080?"
   },

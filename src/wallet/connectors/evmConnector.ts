@@ -89,7 +89,22 @@ export class EvmConnector implements IEvmConnector {
 
       // 请求账户访问权限
       const accounts = await this.requestAccounts(wallet.provider);
-      const chainId = await this.getCurrentChainId(wallet.provider);
+      let chainId = await this.getCurrentChainId(wallet.provider);
+
+      // 如果钱包当前链不在支持的链列表中，自动切换到默认链
+      const isChainSupported = this.chains.some((c) => c.id === chainId);
+      if (!isChainSupported) {
+        console.log(
+          `Current chain ${chainId} is not supported, switching to default chain ${this.defaultChainId}`,
+        );
+        try {
+          await this.switchToChain(wallet.provider, this.defaultChainId);
+          chainId = await this.getCurrentChainId(wallet.provider);
+        } catch (error) {
+          console.warn("Auto switch to default chain failed:", error);
+          // 切换失败仍然使用钱包当前链，不阻断连接流程
+        }
+      }
 
       this.state = {
         accounts,
@@ -130,28 +145,15 @@ export class EvmConnector implements IEvmConnector {
       throw new Error("Provider not available");
     }
 
-    try {
-      // 尝试切换链
-      await provider.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: `0x${targetChainId.toString(16)}` }],
-      });
+    // 尝试切换链（如果钱包中不存在该链则自动添加）
+    await this.switchToChain(provider, targetChainId);
 
-      // binance wallet 切换链并没有没成功，也不会报任何错误，保险起见需要再次验证 chainId 是否切换成功
-      const currentChainId = await this.getCurrentChainId(provider);
-      if (currentChainId !== targetChainId) {
-        throw new Error(
-          `Chain switch failed: expected ${targetChainId}, got ${currentChainId}`,
-        );
-      }
-    } catch (error: any) {
-      throw error; // 切换失败，直接抛出错误，外部调用捕获使用
-      // 如果链不存在，尝试添加链
-      // if (error.code === 4902) {
-      //   await this.addChain(targetChainId);
-      // } else {
-      //   throw error;
-      // }
+    // binance wallet 切换链并没有没成功，也不会报任何错误，保险起见需要再次验证 chainId 是否切换成功
+    const currentChainId = await this.getCurrentChainId(provider);
+    if (currentChainId !== targetChainId) {
+      throw new Error(
+        `Chain switch failed: expected ${targetChainId}, got ${currentChainId}`,
+      );
     }
 
     this.state.chainId = targetChainId;
@@ -240,28 +242,50 @@ export class EvmConnector implements IEvmConnector {
     return parseInt(chainIdHex, 16);
   }
 
-  // 不自动添加链(之后去掉)
-  // private async addChain(targetChainId: number): Promise<void> {
-  //   const provider = this.getProvider();
-  //   if (!provider) return;
+  // 切换到指定链，如果钱包中不存在该链则先添加
+  private async switchToChain(
+    provider: EIP1193Provider,
+    targetChainId: number,
+  ): Promise<void> {
+    try {
+      await provider.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: `0x${targetChainId.toString(16)}` }],
+      });
+    } catch (error: any) {
+      // 4902: 钱包中不存在该链，需要先添加
+      if (error.code === 4902) {
+        await this.addChain(provider, targetChainId);
+      } else {
+        throw error;
+      }
+    }
+  }
 
-  //   const chain = this.getChain(targetChainId);
-  //   await provider.request({
-  //     method: "wallet_addEthereumChain",
-  //     params: [
-  //       {
-  //         chainId: `0x${chain.id.toString(16)}`,
-  //         chainName: chain.name,
-  //         nativeCurrency: chain.nativeCurrency ?? {
-  //           name: "ETH",
-  //           symbol: "ETH",
-  //           decimals: 18,
-  //         },
-  //         rpcUrls: chain.rpcUrls.default.http,
-  //       },
-  //     ],
-  //   });
-  // }
+  private async addChain(
+    provider: EIP1193Provider,
+    targetChainId: number,
+  ): Promise<void> {
+    const chain = this.getChain(targetChainId);
+    await provider.request({
+      method: "wallet_addEthereumChain",
+      params: [
+        {
+          chainId: `0x${chain.id.toString(16)}`,
+          chainName: chain.name,
+          nativeCurrency: chain.nativeCurrency ?? {
+            name: "ETH",
+            symbol: "ETH",
+            decimals: 18,
+          },
+          rpcUrls: chain.rpcUrls.default.http,
+          blockExplorerUrls: chain.blockExplorers?.default
+            ? [chain.blockExplorers.default.url]
+            : undefined,
+        },
+      ],
+    });
+  }
 
   private getChain(id: number): Chain {
     const chain = this.chains.find((c) => c.id === id);
