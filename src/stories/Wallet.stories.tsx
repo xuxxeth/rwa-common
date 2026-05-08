@@ -88,7 +88,11 @@ const WalletDemo: React.FC = () => {
       </div>
       <div>
         {wallets.map(w => (
-          <Button key={w.info.uuid} onClick={() => connect(ConnectorType.Injected, w)} label={w.info.name}></Button>
+          <div style={{display: 'flex'}}>
+            <img src={w.info.icon} style={{width: 34}} alt="" />
+            <Button key={w.info.uuid} onClick={() => connect(ConnectorType.Injected, w)} label={w.info.name}></Button>
+          </div>
+          
         ))}
         <div>Account: {account}</div>
         <div>ChainId: {chainId}</div>
