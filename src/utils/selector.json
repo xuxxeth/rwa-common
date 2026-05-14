@@ -1,0 +1,142 @@
+[
+    {
+        "name": "AlreadyExecuted",
+        "selector": "0x6e30cf20"
+    },
+    {
+        "name": "ERC20InsufficientAllowance",
+        "selector": "0x5a11be04"
+    },
+    {
+        "name": "Forbidden",
+        "selector": "0x1b655284"
+    },
+    {
+        "name": "InsufficientBalance",
+        "selector": "0x01e1e567"
+    },
+    {
+        "name": "InsufficientFee",
+        "selector": "0x79acfd31"
+    },
+    {
+        "name": "InsufficientNetworkFee",
+        "selector": "0x71c0d2a7"
+    },
+    {
+        "name": "InvalidAmount",
+        "selector": "0xd0dc6b60"
+    },
+    {
+        "name": "InvalidOrder",
+        "selector": "0x7c782306"
+    },
+    {
+        "name": "InvalidOrderSize",
+        "selector": "0x16fe265f"
+    },
+    {
+        "name": "InvalidOrderState",
+        "selector": "0x5cf83cda"
+    },
+    {
+        "name": "InvalidPrice",
+        "selector": "0x99d12001"
+    },
+    {
+        "name": "InvalidValidDate",
+        "selector": "0x088399fd"
+    },
+    {
+        "name": "NotOwner",
+        "selector": "0xb88eca93"
+    },
+    {
+        "name": "OrderNotFound",
+        "selector": "0x925757f3"
+    },
+    {
+        "name": "PauseAction",
+        "selector": "0x3bee630d"
+    },
+    {
+        "name": "Unauthorized",
+        "selector": "0x83d39bf3"
+    },
+    {
+        "name": "UnmatchedArrayLength",
+        "selector": "0x5d53e9af"
+    },
+    {
+        "name": "UnsupportedMultiNetworkFee",
+        "selector": "0x888fd288"
+    },
+    {
+        "name": "UnsupportedToken",
+        "selector": "0x6384baa0"
+    },
+    {
+        "name": "UnsupportedMarketOrder",
+        "selector": "0x52ab68c7"
+    },
+    {
+        "name": "InvalidAddress",
+        "selector": "0x08262e9b"
+    },
+    {
+        "name": "InitializationFunctionReverted",
+        "selector": "0x857a34b9"
+    },
+    {
+        "name": "IncorrectFacetCutAction",
+        "selector": "0xea084fb4"
+    },
+    {
+        "name": "NoSelectorsProvidedForFacetForCut",
+        "selector": "0x36ad19a0"
+    },
+    {
+        "name": "RemoveFacetAddressMustBeZeroAddress",
+        "selector": "0x77837383"
+    },
+    {
+        "name": "CannotAddFunctionToDiamondThatAlreadyExists",
+        "selector": "0x632a2724"
+    },
+    {
+        "name": "CannotAddSelectorsToZeroAddress",
+        "selector": "0x51b35e99"
+    },
+    {
+        "name": "CannotRemoveFunctionThatDoesNotExist",
+        "selector": "0x6b87fd8a"
+    },
+    {
+        "name": "CannotRemoveImmutableFunction",
+        "selector": "0x869af71d"
+    },
+    {
+        "name": "CannotReplaceImmutableFunction",
+        "selector": "0xa73e2a5f"
+    },
+    {
+        "name": "CannotReplaceFunctionWithTheSameFunctionFromTheSameFacet",
+        "selector": "0x3840a4f7"
+    },
+    {
+        "name": "CannotReplaceFunctionThatDoesNotExists",
+        "selector": "0xa5191358"
+    },
+    {
+        "name": "CannotReplaceFunctionsFromFacetWithZeroAddress",
+        "selector": "0x7e2a58ba"
+    },
+    {
+        "name": "NoBytecodeAtAddress",
+        "selector": "0x4f721610"
+    },
+    {
+        "name": "FunctionNotFound",
+        "selector": "0x69323d76"
+    }
+]
