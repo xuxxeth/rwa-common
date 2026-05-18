@@ -47,6 +47,11 @@ export function useAccount() {
   return state.accounts[0];
 }
 
+export function useConnectedWallet() {
+  const { state } = useWalletContext();
+  return state.wallet;
+}
+
 export function useQrCodeData() {
   const connector = useConnector();
   const [qrCodeData, setQrCodeData] = useState<QrCodeData | null>(() => {

@@ -12,7 +12,8 @@ export  type PlaceOrderProps = {
   networkFee: string,
   amount: string,
   price: string,
-  size: string
+  size: string,
+  clientAddress: string
 }
 
 export type ERC20Contract = GetContractReturnType<typeof erc20Abi, PublicClient>
@@ -59,3 +60,21 @@ export const ApprovalState = {
   APPROVED: 3,
 }
 export type ApprovalState = typeof ApprovalState[keyof typeof ApprovalState];
+
+export const FeeMode = {
+  NONE: 0,          // 0: 无
+  FIXED_FEE: 1,     // 1: fixed fee, scaled by 1e6
+  AMOUNT_RATIO: 2,  // 2: amount-based rate, scaled by 1e8
+  PER_SHARE: 3      // 3: size-based rate, scaled by 1e8
+}
+export type FeeMode = typeof FeeMode[keyof typeof FeeMode];
+
+export type FeeItem = {
+  ruleId: Number,
+  mode: Number,            // 每股多少USD
+  minMode: Number,         // 固定金额
+  maxMode: Number,         // 按成交金额的一定比例收取
+  value: Number,           // 每股 0.0035 USD
+  minValue: Number,        // 固定金额 0.35 USD
+  maxValue: Number, 
+}

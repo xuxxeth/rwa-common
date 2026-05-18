@@ -270,6 +270,10 @@ export function WalletProvider({
                 }
               }
             }
+            connectionResult = {
+              ...connectionResult,
+              wallet: wallet as DiscoveredWallet,
+            };
             break;
 
           case ConnectorType.WalletConnect:
@@ -280,6 +284,12 @@ export function WalletProvider({
             activeConnector = walletConnectConnector;
             setConnector(activeConnector);
             connectionResult = await walletConnectConnector.connect(wallet);
+            if (wallet) {
+              connectionResult = {
+                ...connectionResult,
+                wallet: wallet as DiscoveredWallet,
+              };
+            }
             break;
 
           default:

@@ -9,11 +9,16 @@ export type EIP1193Provider = {
   isMetaMask?: boolean;
   isOKXWallet?: boolean;
   isBitKeep?: boolean;
+  isBitget?: boolean;
+  isBitGetWallet?: boolean;
+  isBitkeep?: boolean;
+  isTrust?: boolean;
+  isTrustWallet?: boolean;
   isCoinbaseWallet?: boolean;
   id?: string;
 };
 
-export type WalletType = 'walletConnect' | 'binance' | 'okx' | 'metamask' | 'Bitget';
+export type WalletType = 'walletConnect' | 'binance' | 'okx' | 'metamask' | 'Bitget' | 'TrustWallet';
 
 export interface WalletConfig {
   info: WalletInfo;

@@ -87,10 +87,22 @@ export const bitGetWallet = {
   detected: false,
 };
 
+export const trustWallet = {
+  info:{
+    "id": "trustWallet",
+    "name": "Trust Wallet",
+    "rdns": "com.trustwallet.app",
+    "icon": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE2IDIxLjU2MjVMNDguNDk3NCAxMVY4NC4xMjA5QzI1LjI4NDcgNzQuMzcwNiAxNiA1NS42ODQzIDE2IDQ1LjEyNFYyMS41NjI1WiIgZmlsbD0iIzA1MDBGRiIvPgo8cGF0aCBkPSJNODAuOTk3NCAyMS41NjI1TDQ4LjUgMTFWODQuMTIwOUM3MS43MTI4IDc0LjM3MDYgODAuOTk3NCA1NS42ODQzIDgwLjk5NzQgNDUuMTI0VjIxLjU2MjVaIiBmaWxsPSJ1cmwoI3BhaW50MF9saW5lYXJfMTgyXzExMDE4KSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDBfbGluZWFyXzE4Ml8xMTAxOCIgeDE9IjcyLjM2NTIiIHkxPSI1Ljg3OTYiIHgyPSI0Ny44MTYxIiB5Mj0iODMuMTIyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIG9mZnNldD0iMC4wMiIgc3RvcC1jb2xvcj0iIzAwMDBGRiIvPgo8c3RvcCBvZmZzZXQ9IjAuMDgiIHN0b3AtY29sb3I9IiMwMDk0RkYiLz4KPHN0b3Agb2Zmc2V0PSIwLjE2IiBzdG9wLWNvbG9yPSIjNDhGRjkxIi8+CjxzdG9wIG9mZnNldD0iMC40MiIgc3RvcC1jb2xvcj0iIzAwOTRGRiIvPgo8c3RvcCBvZmZzZXQ9IjAuNjgiIHN0b3AtY29sb3I9IiMwMDM4RkYiLz4KPHN0b3Agb2Zmc2V0PSIwLjkiIHN0b3AtY29sb3I9IiMwNTAwRkYiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K",
+  },
+  type: "TrustWallet" as WalletType,
+  detected: false,
+};
+
 export const defaultSupportedWallets: WalletConfig[] = [
   binanceWallet,
   okxWallet,
   bitGetWallet,
+  trustWallet,
   metamaskWallet,
   walletConnectWallet,
 ];

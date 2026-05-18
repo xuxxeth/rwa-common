@@ -1,6 +1,6 @@
 {
   "name": "ca-common-web",
-  "version": "0.1.76",
+  "version": "0.1.79",
   "type": "module",
   "main": "dist/es/index.js",
   "module": "dist/es/index.js",
@@ -15,8 +15,10 @@
     "dist"
   ],
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --open /trust-wallet.html",
+    "build:trust-wallet": "vite build --config vite.config.ts",
     "build": "vite build --config vite.config.lib.ts",
+    "storybook:dev": "storybook dev -p 5173",
     "storybook": "storybook dev -p 5173 --https --ssl-cert ./cert/cert.pem --ssl-key ./cert/key.pem",
     "build-storybook": "storybook build",
     "serve": "http-server ./storybook-static -p 8080 -P http://localhost:8080?"

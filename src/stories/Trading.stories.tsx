@@ -14,7 +14,7 @@ import '../utils/parseError'
 import { TradingNetworks, useTradeUtils } from '../contract';
 import { useSignature } from '../wallet/hooks/useSignature';
 import { useTokenBalances } from '../wallet/index'
-import { Address, parseEther } from 'viem';
+import { Address, parseEther, zeroAddress } from 'viem';
 import { RESPONSE_CODE } from '../utils/constants';
 import { SessionType, SideType, TifType, TradeType } from '../contract/types';
 import { parseAmount } from '../utils';
@@ -74,7 +74,7 @@ const TradingDemo: React.FC = () => {
   const [trading, setTrading] = useState<Address | undefined>(undefined)
 
   const usdt = '0xbeD5856646F1faBDFc565F47f8Ea18685466B745'
-  const applec = '0xf9457b7d8e83CD16CEeBc3bc914824d616166A5a'
+  const applec = '0x034f5688711aE01AAAc81AcFC9cB1Ce9c4Cc1Ec5'
 
   const payToken = useMemo(() => action === 'buy' ? usdt : applec, [action] )
   const amount = useMemo(() => (BigInt(limitPrice) * BigInt(size)), [limitPrice, size])
@@ -121,7 +121,8 @@ const TradingDemo: React.FC = () => {
       networkFee: '0', // 0.002
       amount: '0', // 10 usdt
       price: parseAmount(limitPrice, 6),   // 1 usdt
-      size: parseAmount(size, 6)    // 10
+      size: parseAmount(size, 6),    // 10
+      clientAddress: zeroAddress
     }
     console.log('params: ', params)
     const res = await placeOrder(params, {wait: true, value: parseEther('0.0001').toString(), skipSimulate: true})
