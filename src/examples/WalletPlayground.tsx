@@ -120,6 +120,18 @@ export function WalletPlayground() {
     console.log(result)
   }, [handleGetX]);
 
+  useEffect(() => {
+    const fetchFeeConfig = async () => {
+      try {
+        const feeConfig = await getFeeConfig()
+        console.log('Fetched fee config:', feeConfig)
+      } catch (error) {
+        console.error('Failed to fetch fee config:', error)
+      }
+    }
+    fetchFeeConfig()
+  }, [ getFeeConfig])  
+
   return (
     <div className="mx-auto flex min-h-screen max-w-[1700px] flex-col gap-8 bg-slate-950 px-6 py-10 text-slate-50">
       <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 shadow-2xl shadow-slate-950/40">

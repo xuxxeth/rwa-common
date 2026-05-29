@@ -70,11 +70,11 @@ export const FeeMode = {
 export type FeeMode = typeof FeeMode[keyof typeof FeeMode];
 
 export type FeeItem = {
-  ruleId: Number,
-  mode: Number,            // 每股多少USD
-  minMode: Number,         // 固定金额
-  maxMode: Number,         // 按成交金额的一定比例收取
-  value: Number,           // 每股 0.0035 USD
-  minValue: Number,        // 固定金额 0.35 USD
-  maxValue: Number, 
+  ruleId: number,
+  mode: number,            // 每股多少USD
+  minMode: number,         // 固定金额
+  maxMode: number,         // 按成交金额的一定比例收取
+  value: number,           // 每股 0.0035 USD
+  minValue: number,        // 固定金额 0.35 USD
+  maxValue: number, 
 }
