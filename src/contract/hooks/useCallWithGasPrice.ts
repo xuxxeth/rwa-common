@@ -18,7 +18,7 @@ export function useCallWithGasPrice(overrideChainId?: number) {
       functionName extends ContractFunctionName<TAbi, 'nonpayable' | 'payable'>,
       args extends ContractFunctionArgs<TAbi, 'nonpayable' | 'payable', functionName>,
     >(
-      contract: { abi: TAbi; account: Account | undefined; chain: Chain | undefined; address: Address } | null,
+      contract: { abi: TAbi; address: Address } | null,
       methodName: functionName,
       methodArgs?: args,
       overrides?: Omit<CallParameters, 'chain' | 'to' | 'data'> & { skipSimulate?: boolean },

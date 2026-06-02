@@ -98,9 +98,9 @@ export function useTrading(token: Address, spender?: Address, amount: BigInt = B
   const placeOrder = useCallback(async (params: PlaceOrderProps, options?: { wait?: boolean, value?: string, skipSimulate?: boolean}) => {
     try {
       if (tradingContract && account && publicClient) {
-        // @ts-ignore
+
         const tx = await callWithGasPrice(tradingContract, 'placeOrder', [params], {
-          value: options?.value, 
+          value: options?.value !== undefined ? BigInt(options?.value) : undefined, 
           skipSimulate: options?.skipSimulate,
           gas: 300000n
         })

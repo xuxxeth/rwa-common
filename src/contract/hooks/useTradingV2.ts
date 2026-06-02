@@ -79,9 +79,8 @@ export function useTradingV2(token: Address, spender?: Address, amount: BigInt =
         }
         
         // 3. 交易签名
-        // @ts-ignore
         const tx = await callWithGasPrice(tradingContract, 'placeOrder', [params], {
-          value: options?.value, 
+          value: options?.value !== undefined ? BigInt(options?.value) : undefined, 
           skipSimulate: options?.skipSimulate,
           gas: 300000n
         })
