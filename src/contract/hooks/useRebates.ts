@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import type { Abi, Address } from "viem";
 import { getContract } from "viem";
 import { useAccount } from "../../wallet";
@@ -20,6 +20,7 @@ export function useReferralRebates(diamondAddress: Address | undefined) {
   const { publicClient } = useClient();
   const { callWithGasPrice } = useCallWithGasPrice();
   const vaultContract = useContract(diamondAddress, vaultAbi as Abi);
+  const [txStep, setTxStep] = useState(1);
 
   const getReferralRebates = useCallback(
     async (tokens: Address[]) => {
@@ -82,7 +83,7 @@ export function useReferralRebates(diamondAddress: Address | undefined) {
             },
           };
         }
-        
+
         const tx = await callWithGasPrice(
           vaultContract,
           "claimReferralRebates",
@@ -90,38 +91,45 @@ export function useReferralRebates(diamondAddress: Address | undefined) {
           { skipSimulate: options?.skipSimulate },
         );
 
-        if (options?.wait) {
-          return await waitForReceiptWithRetry(publicClient, tx.hash);
+        setTxStep(2);
+        const txRes = await waitForReceiptWithRetry(publicClient, tx.hash);
+
+        // 交易上链成功，则返回结果
+        if (txRes.code === RESPONSE_CODE.SUCCESS) {
+          setTxStep(3);
+          return txRes;
+        }
+
+        // 交易失败，
+          return {
+            code: RESPONSE_CODE.ERROR,
+            data: {
+              errorCode: ERROR_CODE.TXERROR,
+              name: 'tx error'
+            }
+          };
+      } catch (error: any) {
+        let errorMessage: any = getUserRejection(error.toString());
+
+        if (!errorMessage || !errorMessage.code) {
+          errorMessage = extractErrorNameAndCode(error.toString());
+        }
+        if (!errorMessage) {
+          errorMessage = parseErrorFromMessage(error.toString());
         }
 
         return {
-          code: RESPONSE_CODE.SUCCESS,
-          data: { transactionHash: tx.hash },
+          code: RESPONSE_CODE.ERROR,
+          data: {
+            errorCode: errorMessage?.code,
+            name: errorMessage?.name,
+            message:
+              errorMessage?.code === ERROR_CODE.USERREJECT
+                ? "userReject"
+                : getAppErrorMessageFromCode(errorMessage) ||
+                  "claimReferralRebatesFail",
+          },
         };
-      } catch (error: any) {
-        
-        console.log('===>claimReferralRebates error', error.toString())
-        // let errorMessage: any = getUserRejection(error.toString());
-
-        // if (!errorMessage || !errorMessage.code) {
-        //   errorMessage = extractErrorNameAndCode(error.toString());
-        // }
-        // if (!errorMessage) {
-        //   errorMessage = parseErrorFromMessage(error.toString());
-        // }
-
-        // return {
-        //   code: RESPONSE_CODE.ERROR,
-        //   data: {
-        //     errorCode: errorMessage?.code,
-        //     name: errorMessage?.name,
-        //     message:
-        //       errorMessage?.code === ERROR_CODE.USERREJECT
-        //         ? "userReject"
-        //         : getAppErrorMessageFromCode(errorMessage) ||
-        //           "claimReferralRebatesFail",
-        //   },
-        // };
       }
     },
     [vaultContract, account, publicClient, callWithGasPrice],
@@ -129,6 +137,7 @@ export function useReferralRebates(diamondAddress: Address | undefined) {
 
   return {
     contract: vaultContract,
+    txStep,
     getReferralRebates,
     claimReferralRebates,
   };
