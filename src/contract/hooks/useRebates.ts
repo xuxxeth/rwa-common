@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import type { Abi, Address } from "viem";
-import { getContract } from "viem";
 import { useAccount } from "../../wallet";
 import { useClient } from "../../wallet/hooks/useClient";
 import { useCallWithGasPrice } from "./useCallWithGasPrice";
@@ -101,13 +100,13 @@ export function useReferralRebates(diamondAddress: Address | undefined) {
         }
 
         // 交易失败，
-          return {
-            code: RESPONSE_CODE.ERROR,
-            data: {
-              errorCode: ERROR_CODE.TXERROR,
-              name: 'tx error'
-            }
-          };
+        return {
+          code: RESPONSE_CODE.ERROR,
+          data: {
+            errorCode: ERROR_CODE.TXERROR,
+            name: "tx error",
+          },
+        };
       } catch (error: any) {
         let errorMessage: any = getUserRejection(error.toString());
 
