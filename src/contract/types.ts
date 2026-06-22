@@ -78,3 +78,7 @@ export type FeeItem = {
   minValue: number,        // 固定金额 0.35 USD
   maxValue: number, 
 }
+export type CommissionConfig = {
+  min: number,
+  rate: number
+}
