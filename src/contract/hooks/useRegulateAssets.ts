@@ -1,37 +1,31 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import { Address, Abi } from "viem";
 import { useClient } from "../../wallet/hooks/useClient";
 
 import riskControlAbi from "../../contract/config/riskControl/abi.json";
 import regulatoryVaultAbi from "../../contract/config/regulatoryVault/abi.json";
 
-export function useRegulateAssets(
-  diamondAddress: string | undefined,
-  riskAccount: string | undefined,
-  tokens: string[] | undefined
-) {
+export interface RegulateAssetItem {
+  token: string;
+  amount: bigint;
+}
+
+export function useRegulateAssets() {
   const { publicClient } = useClient();
-  const [assets, setAssets] = useState<{ token: string; amount: bigint }[]>([]);
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const getRegulateAssets = useCallback(
+    async (
+      diamondAddress: string | undefined | null,
+      riskAccount: string | undefined,
+      tokens: string[] | undefined,
+    ) => {
+      if (!diamondAddress || !riskAccount || !tokens || tokens.length === 0) {
+        return [] as RegulateAssetItem[];
+      }
+      if (!publicClient) {
+        throw new Error("No valid public client");
+      }
 
-  const fetchAssets = useCallback(async () => {
-    // 参数校验
-    if (
-      !publicClient ||
-      !diamondAddress ||
-      !riskAccount ||
-      !tokens ||
-      tokens.length === 0
-    ) {
-      setAssets([]);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-    try {
       // 1. Get regulatoryVault address
       const regulatoryVaultAddress = (await publicClient.readContract({
         address: diamondAddress as Address,
@@ -47,40 +41,29 @@ export function useRegulateAssets(
           functionName: "getRegulatoryAsset",
           args: [riskAccount, token],
         })),
-        allowFailure: true, // 显式声明允许失败，与下方的 status 判断对应
+        allowFailure: true,
       });
 
-      const data = results.map((res, index) => {
-        if (res.status === "success") {
+      return results.map((result: (typeof results)[number], index: number) => {
+        if (result.status === "success") {
           return {
             token: tokens[index],
-            amount: res.result as bigint,
-          };
-        } else {
-          console.warn(
-            `Failed to fetch asset for token ${tokens[index]}`,
-            res.error
-          );
-          return {
-            token: tokens[index],
-            amount: 0n,
+            amount: result.result as bigint,
           };
         }
+
+        console.warn(
+          `Failed to fetch asset for token ${tokens[index]}`,
+          result.error,
+        );
+        return {
+          token: tokens[index],
+          amount: 0n,
+        };
       });
+    },
+    [publicClient],
+  );
 
-      setAssets(data);
-    } catch (err) {
-      console.error("Failed to fetch regulatory assets:", err);
-      setError(err as Error);
-      setAssets([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [publicClient, diamondAddress, riskAccount, JSON.stringify(tokens)]); // JSON.stringify 是处理数组依赖的实用技巧
-
-  useEffect(() => {
-    fetchAssets();
-  }, [fetchAssets]);
-
-  return { assets, isLoading, error, refetch: fetchAssets };
+  return { getRegulateAssets };
 }

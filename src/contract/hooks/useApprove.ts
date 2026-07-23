@@ -8,7 +8,7 @@ import { calculateGasMargin } from "../../utils"
 import { ApprovalState } from "../types"
 
 export function useApprove(
-  token: Address,
+  token: Address | undefined,
   spender: string | undefined,
   targetAmount: BigInt
   

@@ -1,0 +1,184 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "tokens",
+        "type": "address[]"
+      }
+    ],
+    "name": "getAssets",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "reserve",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "client",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "clientRebates",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "tokens",
+        "type": "address[]"
+      }
+    ],
+    "name": "getBalances",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "balances",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "tokens",
+        "type": "address[]"
+      }
+    ],
+    "name": "getFees",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "platformFees",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "commission",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "networkFees",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "unsettledPlatformFees",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64[]",
+        "name": "orderIds",
+        "type": "uint64[]"
+      }
+    ],
+    "name": "getSettlementRequests",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "orderId",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "cumAmount",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "lastAmount",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint48",
+            "name": "lastSize",
+            "type": "uint48"
+          },
+          {
+            "internalType": "uint48",
+            "name": "cumSize",
+            "type": "uint48"
+          },
+          {
+            "internalType": "uint8",
+            "name": "state",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "reason",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "riskType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "vipLevel",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "referrer",
+            "type": "address"
+          },
+          {
+            "internalType": "uint16",
+            "name": "referralRate",
+            "type": "uint16"
+          }
+        ],
+        "internalType": "struct IExecutor.FillRequest[]",
+        "name": "requests",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "tokens",
+        "type": "address[]"
+      }
+    ],
+    "name": "getTotalSupplies",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "supplies",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

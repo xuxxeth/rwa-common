@@ -22,6 +22,7 @@ import {
   DEFAULT_CHAIN_ID,
   DEFAULT_PROJECT_ID,
   DEFAULT_RELAY_URL,
+  CONNECT_STATE_KEY,
 } from "../config/constants";
 import { EvmConnector } from "../connectors/evmConnector";
 import { WalletConnectConnector } from "../connectors/walletConnectConnector";
@@ -34,8 +35,9 @@ type WalletContextValue = {
   state: WalletState;
   wallets: WalletConfig[];
   chains: Chain[];
-  connect: (type: ConnectorType, wallet?: WalletConfig) => Promise<void>;
+  connect: (type: ConnectorType, chainId: number, wallet?: WalletConfig) => Promise<void>;
   disconnect: () => Promise<void>;
+  switchChain: (targetChainId: number) => Promise<void>;
   isConnecting: boolean;
   error: string | null;
   initialized: boolean;
@@ -143,15 +145,56 @@ export function useConnectorManager(
 // 自定义 Hook：连接状态管理
 export function useConnectionState(config?: ManagerConfig) {
   const [connector, setConnector] = useState<IWalletConnector | null>(null);
-  const [state, setState] = useState<WalletState>({
+  const [state, setStateInternal] = useState<WalletState>({
     accounts: [],
     chainId: null,
     connected: false,
+    isChainSupported: false,
   });
+  const stateRef = useRef<WalletState>(state);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ErrorType | null>(null);
+  const chainsRef = useRef<Chain[]>([]);
 
-  // 事件监听器
+  chainsRef.current = config?.chains || [];
+
+  const persistWalletState = useCallback(
+    (newState: WalletState) => {
+      const configedChains = chainsRef.current
+
+      const isChainSupported =
+        !!newState.chainId &&
+        !!configedChains.some((chain) => chain.id === newState.chainId);
+
+      const connectState = {
+        accounts: newState.accounts,
+        chainId: newState.chainId,
+        isChainSupported,
+      };
+
+      localStorage.setItem(CONNECT_STATE_KEY, JSON.stringify(connectState));
+
+      return isChainSupported;
+    },
+    [],
+  );
+
+  const setState = useCallback(
+    (action: React.SetStateAction<WalletState>) => {
+      const newState =
+        typeof action === "function"
+          ? (action as (prev: WalletState) => WalletState)(stateRef.current)
+          : action;
+
+      const isChainSupported = persistWalletState(newState);
+
+      newState.isChainSupported = isChainSupported;
+      stateRef.current = newState;
+      setStateInternal(newState);
+    },
+    [persistWalletState],
+  );
+
   useEffect(() => {
     if (!connector) return;
 
@@ -161,15 +204,15 @@ export function useConnectionState(config?: ManagerConfig) {
 
     const handleChainChanged = (chainId: number) => {
       // 这里要判断一下，如果是非支持的链，则不进行存储操作
-      const chains = config?.chains || [];
-      const nowChain = chains.find((chain) => chain.id === chainId);
-      let _chainId: number | null = null;
-      if (nowChain) {
-        _chainId = nowChain.id;
-      }
+      // const chains = config?.chains || [];
+      // const nowChain = chains.find((chain) => chain.id === chainId);
+      // let _chainId: number | null = null;
+      // if (nowChain) {
+      //   _chainId = nowChain.id;
+      // }
 
-      setState((prev) => ({ ...prev, chainId: _chainId }));
-      storage.setItem(STORAGE_KEYS.DEFAULT_CHAIN_ID, _chainId || "");
+      setState((prev) => ({ ...prev, chainId: chainId }));
+      storage.setItem(STORAGE_KEYS.DEFAULT_CHAIN_ID, chainId || "");
     };
 
     const handleDisconnect = () => {
@@ -191,7 +234,7 @@ export function useConnectionState(config?: ManagerConfig) {
       unsubscribeChain();
       unsubscribeDisconnect();
     };
-  }, [connector]);
+  }, [connector, setState]);
 
   return {
     connector,
@@ -204,6 +247,8 @@ export function useConnectionState(config?: ManagerConfig) {
     setError,
   };
 }
+
+type ErrorType = "SwitchChainFailed" | 'DisconnectFailed' | 'ConnectFailed'
 
 export function WalletProvider({
   children,
@@ -229,7 +274,7 @@ export function WalletProvider({
 
   // 连接钱包
   const connect = useCallback(
-    async (type: ConnectorType, wallet?: WalletConfig) => {
+    async (type: ConnectorType, chainId: number, wallet?: WalletConfig) => {
       try {
         setIsConnecting(true);
         setError(null);
@@ -247,29 +292,13 @@ export function WalletProvider({
 
             // connect 的时候，如果发现已连接钱包，会执行一次 disconnect, disconnect 会清除 connector
             connectionResult = await evmConnector.connect(
+              chainId,
               wallet as DiscoveredWallet,
             );
             // 所以在这里设置 connector
             activeConnector = evmConnector;
             setConnector(activeConnector);
 
-            // 连接成功后，如果钱包当前链不在支持列表中，自动切换到 defaultChainId
-            if (connectionResult.chainId && config?.chains && config.chains.length > 0) {
-              const isSupported = config.chains.some(
-                (c) => c.id === connectionResult.chainId,
-              );
-              if (!isSupported && config.defaultChainId) {
-                try {
-                  await evmConnector.switchChain(config.defaultChainId);
-                  connectionResult = {
-                    ...connectionResult,
-                    chainId: config.defaultChainId,
-                  };
-                } catch (switchError) {
-                  console.warn("Auto switch chain failed:", switchError);
-                }
-              }
-            }
             connectionResult = {
               ...connectionResult,
               wallet: wallet as DiscoveredWallet,
@@ -283,7 +312,7 @@ export function WalletProvider({
             // walletConnect 在用户手机扫码成功之后，才会执行 await 后面的方法，所以在这里设置 connector
             activeConnector = walletConnectConnector;
             setConnector(activeConnector);
-            connectionResult = await walletConnectConnector.connect(wallet);
+            connectionResult = await walletConnectConnector.connect(chainId,wallet);
             if (wallet) {
               connectionResult = {
                 ...connectionResult,
@@ -301,12 +330,14 @@ export function WalletProvider({
         // 持久化连接类型
         localStorage.setItem(STORAGE_KEYS.CONNECTOR_TYPE, type);
       } catch (err) {
-        // 有的 error 不是 Error 类型，但是携带 message 属性
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : (err as { message?: string })?.message || "Connection failed";
-        setError(errorMessage);
+        // // 有的 error 不是 Error 类型，但是携带 message 属性
+        // const errorMessage =
+        //   err instanceof Error
+        //     ? err.message
+        //     : (err as { message?: string })?.message || "Connection failed";
+        // setError(errorMessage);
+        // setError(err as ErrorType);
+        setError( err !== 'SwitchChainFailed' ? 'ConnectFailed' : err)
         throw err;
       } finally {
         setIsConnecting(false);
@@ -324,9 +355,29 @@ export function WalletProvider({
       // 状态会在事件监听器中自动更新
     } catch (err) {
       console.error("Wallet disconnection failed:", err);
-      setError("Disconnection failed");
+      setError('DisconnectFailed');
+      throw err;
     }
   }, [connector]);
+
+  const switchChain = useCallback(
+    async (targetChainId: number) => {
+      try {
+        if (connector) {
+          await connector.switchChain(targetChainId);
+        } else {
+          setState((prev) => ({ ...prev, chainId: targetChainId }));
+        }
+      } catch (error) {
+        setState((prev) => ({ ...prev, chainId: targetChainId }));
+        setError('SwitchChainFailed');
+        // 切换链失败后，断开连接
+        await disconnect();
+        throw error;
+      }
+    },
+    [connector],
+  );
 
   // 初始化默认链ID
   useEffect(() => {
@@ -349,6 +400,7 @@ export function WalletProvider({
       disconnect,
       isConnecting,
       error,
+      switchChain,
       initialized,
     }),
     [
@@ -358,6 +410,7 @@ export function WalletProvider({
       chains,
       connect,
       disconnect,
+      switchChain,
       isConnecting,
       error,
       initialized,

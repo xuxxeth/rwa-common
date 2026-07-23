@@ -157,7 +157,7 @@ const TradingDemo: React.FC = () => {
       </div>
       <div>
         {wallets.map(w => (
-          <Button key={w.info.uuid} onClick={() => connect(ConnectorType.Injected, w)} label={w.info.name}></Button>
+          <Button key={w.info.uuid} onClick={() => connect(ConnectorType.Injected, 97, w)} label={w.info.name}></Button>
         ))}
         <div>Account: {account}</div>
         <div>ChainId: {chainId}</div>

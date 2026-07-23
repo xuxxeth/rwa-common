@@ -52,6 +52,7 @@ export interface WalletState {
   chainId: number | null;
   connected: boolean;
   wallet?: DiscoveredWallet;
+  isChainSupported?: boolean;
 }
 
 export interface QrCodeData {
@@ -63,6 +64,7 @@ export type ConnectType = DiscoveredWallet | { chainId?: number };
 
 export interface IWalletConnector {
   connect(
+    chainId: number,
     wallet?: DiscoveredWallet | WalletConfig
   ): Promise<WalletState & { qrCodeData?: QrCodeData }>;
   disconnect(): Promise<void>;

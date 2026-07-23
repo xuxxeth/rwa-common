@@ -6,6 +6,7 @@ import { CounterAbi, CounterNetworks } from "../config/counter";
 import { getAddress } from "../../utils";
 import { TradingAbi, TradingNetworks } from "../config/trading";
 import { MarketAbi, MarketNetworks } from "../config/market";
+import { SplitAbi } from "../config/split";
 
 
 export function useContract(address: Address | undefined, abi: any, withSigner = true) {
@@ -31,11 +32,17 @@ export function useTradingContract(trading?: Address) {
   return useContract(address, TradingAbi)
 }
 
-export function useTokenContract(address: Address) {
+export function useTokenContract(address?: Address) {
   return useContract(address, erc20Abi)
 }
 
 export function useMarketContract(marekt?: Address) {
   const address = marekt
   return useContract(address, MarketAbi)
+}
+
+
+export function useSplitContract(split?: Address) {
+  const address = split
+  return useContract(address, SplitAbi)
 }

@@ -77,7 +77,7 @@ export class EvmConnector implements IEvmConnector {
   }
 
   // 连接钱包
-  async connect(wallet: DiscoveredWallet): Promise<WalletState> {
+  async connect(chainId: number, wallet: DiscoveredWallet): Promise<WalletState> {
     try {
       // 断开现有连接
       if (this.wallet) {
@@ -89,20 +89,13 @@ export class EvmConnector implements IEvmConnector {
 
       // 请求账户访问权限
       const accounts = await this.requestAccounts(wallet.provider);
-      let chainId = await this.getCurrentChainId(wallet.provider);
+      const currentChainId = await this.getCurrentChainId(wallet.provider);
 
-      // 如果钱包当前链不在支持的链列表中，自动切换到默认链
-      const isChainSupported = this.chains.some((c) => c.id === chainId);
-      if (!isChainSupported) {
-        console.log(
-          `Current chain ${chainId} is not supported, switching to default chain ${this.defaultChainId}`,
-        );
+      if (currentChainId !== chainId) {
         try {
-          await this.switchToChain(wallet.provider, this.defaultChainId);
-          chainId = await this.getCurrentChainId(wallet.provider);
+          await this.switchToChain(wallet.provider, chainId);
         } catch (error) {
-          console.warn("Auto switch to default chain failed:", error);
-          // 切换失败仍然使用钱包当前链，不阻断连接流程
+          throw new Error('SwitchChainFailed')
         }
       }
 
@@ -254,11 +247,12 @@ export class EvmConnector implements IEvmConnector {
       });
     } catch (error: any) {
       // 4902: 钱包中不存在该链，需要先添加
-      if (error.code === 4902) {
-        await this.addChain(provider, targetChainId);
-      } else {
-        throw error;
-      }
+      // if (error.code === 4902) {
+      //   await this.addChain(provider, targetChainId);
+      // } else {
+      //   throw error;
+      // }
+      throw error;
     }
   }
 

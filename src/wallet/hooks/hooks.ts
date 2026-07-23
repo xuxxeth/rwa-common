@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useMemo } from "react";
 import { useWalletContext } from "../providers/WalletProvider";
 import {
   ConnectorType,
@@ -23,8 +23,8 @@ export function useChains() {
 export function useConnect() {
   const { connect } = useWalletContext();
   return useCallback(
-    async (type: ConnectorType, wallet?: WalletConfig) => {
-      await connect(type, wallet);
+    async (type: ConnectorType, chainId: number, wallet?: WalletConfig) => {
+      await connect(type, chainId, wallet);
     },
     [connect]
   );
@@ -87,12 +87,30 @@ export function useChainId() {
   return state.chainId;
 }
 
+export function useChainIdAndIsSupported() {
+  const { state } = useWalletContext();
+  return { chainId: state.chainId, isChainSupported: state.isChainSupported }
+}
+
 export function useSwitchChain() {
-  const { connector } = useWalletContext();
+  const { switchChain } = useWalletContext();
   return useCallback(
     async (targetChainId: number) => {
-      await connector?.switchChain(targetChainId);
+      await switchChain(targetChainId);
     },
-    [connector]
+    [switchChain]
   );
+}
+
+/**
+ * 判断当前链是否是支持的链
+ */
+
+export function useIsSupportChain() {
+  const chainId = useChainId()
+  const chains = useChains()
+
+  return useMemo(() => {
+    return !!chains.find((chain) => chain.id === chainId);
+  }, [chainId, chains])
 }

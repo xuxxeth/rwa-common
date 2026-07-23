@@ -82,3 +82,9 @@ export type CommissionConfig = {
   min: number,
   rate: number
 }
+
+export  type ExchangeProps = {
+  payinToken: string,
+  payinAmount: string,
+  
+}

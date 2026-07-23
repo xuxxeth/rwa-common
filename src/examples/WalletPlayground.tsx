@@ -17,10 +17,13 @@ import {
 } from "../wallet/hooks/hooks";
 import { ConnectorType } from "../wallet/types";
 import { bscTestnet, xLayerTestnet } from "../wallet/config/chains";
-import { parseAmount } from "../utils";
+import { getAddress, parseAmount } from "../utils";
 import { SessionType, SideType, TifType, TradeType } from "../contract/types";
 import "../utils/parseError";
 import { useMarket } from "../contract/hooks/useMarket";
+import { USDTNetworks } from "../contract/config/usdt";
+import { TradingNetworks } from "../contract/config/trading";
+import { SplitCompoent } from "./Split";
 
 export function WalletPlayground() {
   const wallets = useWallets();
@@ -36,13 +39,14 @@ export function WalletPlayground() {
   const [action, setAction] = useState("buy");
   const [limitPrice, setLimitPrice] = useState("231");
   const [size, setSize] = useState("2");
+  const [usdtAddress, setUsdtAddress] = useState<Address | undefined>(undefined);
   const [trading, setTrading] = useState<Address | undefined>(undefined);
 
   const { getTokenBalances } = useTokenBalances();
   const { publicClient } = useClient();
   const { approvalState, allowance, txStep, refetchAllowance, placeOrder } =
     useTradingV2(
-      "0xbeD5856646F1faBDFc565F47f8Ea18685466B745",
+      usdtAddress,
       trading,
       action !== "buy"
         ? BigInt(parseAmount(size, 6))
@@ -77,31 +81,37 @@ export function WalletPlayground() {
     publicClient?.getBlockNumber().then((res) => {
       console.log("BlockNumber: ", res);
     });
-
+    
     setTimeout(() => {
-      setTrading("0x6c5A81eC1D8cF4A389F6Cc9498A3096CF823cb88");
+      if (chainId) {
+        const usdt = getAddress(USDTNetworks, chainId)
+        const trading = getAddress(TradingNetworks, chainId)
+        setUsdtAddress(usdt)
+        setTrading(trading);
+      }
+      
     }, 500);
-  }, [publicClient]);
+  }, [publicClient, chainId]);
 
   useEffect(() => {
-    if (account) {
+    if (account && usdtAddress) {
       getTokenBalances(account, [
-        "0xbeD5856646F1faBDFc565F47f8Ea18685466B745",
-        "0x034f5688711aE01AAAc81AcFC9cB1Ce9c4Cc1Ec5",
+        usdtAddress,
       ]).then((res) => {
         console.log(res);
       });
     }
-  }, [account, getTokenBalances]);
+  }, [account, usdtAddress, getTokenBalances]);
 
   const handlePlaceOrder = useCallback(async () => {
+    if (!usdtAddress) return
     const params = {
-      stockId: "1",
+      stockId: "14",
       tradeType: TradeType.LIMIT,
       side: action === "buy" ? SideType.BUYLIMIT : SideType.SELL,
       tif: TifType.DAY,
       sessionType: SessionType.DEFAULT,
-      paymentToken: "0xbeD5856646F1faBDFc565F47f8Ea18685466B745",
+      paymentToken: usdtAddress,
       validDate: "1",
       networkFee: "0",
       amount: "0",
@@ -110,9 +120,9 @@ export function WalletPlayground() {
       clientAddress: zeroAddress,
     };
     console.log("params: ", params);
-    const res = await placeOrder(params, { wait: true, value: parseEther("0").toString() });
+    const res = await placeOrder(params, { wait: true, value: parseEther("0.00003").toString() });
     console.log("placeOrder res:", res);
-  }, [action, limitPrice, placeOrder, size]);
+  }, [action, limitPrice, placeOrder, size, usdtAddress]);
 
   const { getFeeConfig } = useMarket(trading)
   const handleGetFeeRules = useCallback(async () => {
@@ -175,7 +185,7 @@ export function WalletPlayground() {
             <div className="text-sm font-medium text-slate-200">WalletConnect</div>
             <div className="mt-4 flex flex-wrap gap-3">
               <Button
-                onClick={() => connect(ConnectorType.WalletConnect, walletConnectWallet)}
+                onClick={() => connect(ConnectorType.WalletConnect, 97, walletConnectWallet)}
                 label="WalletConnect"
               />
               <Button onClick={() => disconnect()} label="Disconnect WC" />
@@ -226,7 +236,7 @@ export function WalletPlayground() {
                     onClick={() =>
                       isConnectedWallet
                         ? disconnect()
-                        : connect(ConnectorType.Injected, wallet)
+                        : connect(ConnectorType.Injected, 97, wallet)
                     }
                     label={isConnectedWallet ? "Disconnect" : "Connect"}
                   />
@@ -280,6 +290,7 @@ export function WalletPlayground() {
               <Button onClick={() => cancelOrder("29532595632996353")} label="Cancel Order" />
             </div>
           </div>
+          <SplitCompoent />
         </div>
       </section>
     </div>

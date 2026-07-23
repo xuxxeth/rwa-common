@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import type { Abi, Address } from "viem";
 import { useAccount } from "../../wallet";
+import { useConnector } from "../../wallet/hooks/hooks";
 import { useClient } from "../../wallet/hooks/useClient";
 import { useCallWithGasPrice } from "./useCallWithGasPrice";
 import { useContract } from "./useContract";
@@ -13,6 +14,12 @@ import {
   getUserRejection,
   parseErrorFromMessage,
 } from "../../utils/parseError";
+
+export interface RebateParam {
+  chainId: number;
+  diamondAddress: Address;
+  tokens: Address[];
+}
 
 export function useReferralRebates(diamondAddress: Address | undefined) {
   const account = useAccount();
@@ -139,5 +146,55 @@ export function useReferralRebates(diamondAddress: Address | undefined) {
     txStep,
     getReferralRebates,
     claimReferralRebates,
+  };
+}
+
+export function useReferralRebatesBatch() {
+  const account = useAccount();
+  const connector = useConnector();
+
+  const getReferralRebatesBatch = useCallback(
+    async (params: RebateParam[]) => {
+      if (!connector) {
+        throw new Error("No valid connector");
+      }
+      const owner = account;
+      if (!owner) {
+        throw new Error("Account is required");
+      }
+      if (params.length === 0) {
+        return [] as bigint[][];
+      }
+
+      const batchResults = await Promise.all(
+        params.map(async (param) => {
+          const { chainId, diamondAddress, tokens } = param;
+          if (tokens.length === 0) {
+            return [] as bigint[];
+          }
+
+          const targetPublicClient = connector.getPublicClient(chainId);
+          if (!targetPublicClient) {
+            throw new Error("No valid public client");
+          }
+
+          const rebates = await targetPublicClient.readContract({
+            address: diamondAddress,
+            abi: vaultAbi as Abi,
+            functionName: "getReferralRebates",
+            args: [owner, tokens],
+          });
+
+          return rebates as bigint[];
+        }),
+      );
+
+      return batchResults;
+    },
+    [connector, account],
+  );
+
+  return {
+    getReferralRebatesBatch,
   };
 }

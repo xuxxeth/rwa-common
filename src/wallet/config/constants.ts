@@ -17,3 +17,5 @@ export enum DEFAULT_EIP_155_EVENTS {
 export const CONNECTOR_TYPE = 'CONNECTOR_TYPE';
 export const WALLET_UUID = 'WALLET_UUID';
 export const DEFAULT_CHAIN_ID = 'DEFAULT_CHAIN_ID';
+
+export const CONNECT_STATE_KEY = 'CONNECT_STATE';

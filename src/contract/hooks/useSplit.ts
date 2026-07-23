@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { useTradingContract } from "./useContract";
-import { ApprovalState, PlaceOrderProps } from "../types";
+import { useSplitContract } from "./useContract";
+import { ApprovalState, ExchangeProps } from "../types";
 import { useAccount } from "../../wallet";
 import { useApprove } from "./useApprove";
 import { Address, Chain, type PublicClient } from "viem";
@@ -12,8 +12,8 @@ import { ERROR_CODE, RESPONSE_CODE } from "../../utils/constants";
 import { waitForReceiptWithRetry } from "./useTrading";
 
 
-export function useTradingV2(token?: Address, spender?: Address, amount: BigInt = BigInt(0)) {
-  const tradingContract = useTradingContract(spender)
+export function useSplit(token?: Address, spender?: Address, amount: BigInt = BigInt(0)) {
+  const splitContract = useSplitContract(spender)
   const account = useAccount()
   const { publicClient } = useClient()
   const { callWithGasPrice } = useCallWithGasPrice()
@@ -29,9 +29,9 @@ export function useTradingV2(token?: Address, spender?: Address, amount: BigInt 
     }
   }, [approvalState])
 
-  const placeOrder = useCallback(async (params: PlaceOrderProps, options?: { wait?: boolean, value?: string, skipSimulate?: boolean}) => {
+  const exchangeToken = useCallback(async (params: ExchangeProps, options?: { wait?: boolean, value?: string, skipSimulate?: boolean}) => {
     try {
-      if (tradingContract && account && publicClient) {
+      if (splitContract && account && publicClient) {
         // 1. 先获取当前allowance
         let _allowance = await refetchAllowance()
         // 2. 如果allowance不够，则进行授权操作
@@ -43,7 +43,7 @@ export function useTradingV2(token?: Address, spender?: Address, amount: BigInt 
               data: {
                 errorCode: ERROR_CODE.TXERROR,
                 name: 'tx error',
-                message: 'placeOrderFail'
+                message: 'exchangeTokenFail'
               },
             };
           } 
@@ -55,7 +55,7 @@ export function useTradingV2(token?: Address, spender?: Address, amount: BigInt 
               data: {
                 errorCode: ERROR_CODE.TXERROR,
                 name: 'tx error',
-                message: 'placeOrderFail'
+                message: 'exchangeTokenFail'
               },
             }
           }
@@ -68,7 +68,7 @@ export function useTradingV2(token?: Address, spender?: Address, amount: BigInt 
               data: {
                 errorCode: ERROR_CODE.ALLOWANCE,
                 name: 'tx error',
-                message: 'placeOrderFail'
+                message: 'exchangeTokenFail'
               },
             }
           }
@@ -79,12 +79,12 @@ export function useTradingV2(token?: Address, spender?: Address, amount: BigInt 
         }
         
         // 3. 交易签名
-        const tx = await callWithGasPrice(tradingContract, 'placeOrder', [params], {
+        const tx = await callWithGasPrice(splitContract, 'exchangeToken', [params.payinToken, params.payinAmount], {
           value: options?.value !== undefined ? BigInt(options?.value) : undefined, 
           skipSimulate: options?.skipSimulate,
           gas: 300000n
         })
-        // 交易发送成功，返回hash，则进行下一步，查询交易上链结果 
+        
         setTxStep(2)
         // 4. 查询交易上链结果
         const txRes = await waitForReceiptWithRetry( publicClient, tx.hash)
@@ -99,7 +99,7 @@ export function useTradingV2(token?: Address, spender?: Address, amount: BigInt 
           data: {
             errorCode: ERROR_CODE.TXERROR,
             name: 'tx error',
-            message: 'placeOrderFail'
+            message: 'exchangeTokenFail'
           }
         };
       }
@@ -131,7 +131,7 @@ export function useTradingV2(token?: Address, spender?: Address, amount: BigInt 
     }
   }, [
     amount,
-    tradingContract, 
+    splitContract, 
     account, 
     approvalState, 
     publicClient, 
@@ -144,8 +144,8 @@ export function useTradingV2(token?: Address, spender?: Address, amount: BigInt 
     txStep,
     approvalState: approvalState,
     allowance: currentAllowance,
-    contract: tradingContract,
+    contract: splitContract,
     refetchAllowance,
-    placeOrder
+    exchangeToken
   }
 }

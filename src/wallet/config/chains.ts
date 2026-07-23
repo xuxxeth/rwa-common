@@ -52,7 +52,13 @@ export const xLayer = defineChain({
   },
   blockExplorers: {
     default: { name: 'OKX Explorer', url: 'https://www.okx.com/web3/explorer/xlayer' }
-  }
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 53426472, // 部署区块高度，随便填也能用，但最好写正确
+    },
+  },
 })
 
 export const xLayerTestnet = defineChain({
@@ -66,7 +72,13 @@ export const xLayerTestnet = defineChain({
   },
   blockExplorers: {
     default: { name: 'OKX Explorer', url: 'https://www.okx.com/web3/explorer/xlayer-test' }
-  }
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 23736649, // 部署区块高度，随便填也能用，但最好写正确
+    },
+  },
 })
 
 export type SupportedChain = typeof bsc | typeof xLayer | typeof bscTestnet | typeof xLayerTestnet

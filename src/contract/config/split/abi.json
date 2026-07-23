@@ -1,0 +1,488 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "code",
+        "type": "uint32"
+      }
+    ],
+    "name": "AppError",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InsufficientBalance",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "addr",
+        "type": "address"
+      }
+    ],
+    "name": "InvalidAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidArgument",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ReentrancyGuardReentrantCall",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "bits",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "SafeCastOverflowedUintDowncast",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "SafeERC20FailedOperation",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "Unauthorized",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "stockToken",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "Burn",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "stockToken",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "Mint",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "lastBlockNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "Pilot",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "treasury",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "payinToken",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "paymentToken",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "paymentAmount",
+        "type": "uint64"
+      }
+    ],
+    "name": "SplitPaymentDeposited",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "treasury",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "payinToken",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "paymentToken",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "paymentAmount",
+        "type": "uint64"
+      }
+    ],
+    "name": "SplitPaymentWithdrawn",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "riskType",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "payinShares",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "payoutShares",
+        "type": "uint32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint48",
+        "name": "price",
+        "type": "uint48"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "payin",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "payinAmount",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "payout",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "payoutAmount",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "payment",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "paymentAmount",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "reason",
+        "type": "uint8"
+      }
+    ],
+    "name": "TokenExchanged",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "payinToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "paymentToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint64",
+        "name": "paymentAmount",
+        "type": "uint64"
+      }
+    ],
+    "name": "depositSplitPayment",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "payinToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "riskAccounts",
+        "type": "address[]"
+      }
+    ],
+    "name": "exchangeRegulatedToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "payinToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint64",
+        "name": "payinAmount",
+        "type": "uint64"
+      }
+    ],
+    "name": "exchangeToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "payinToken",
+        "type": "address"
+      }
+    ],
+    "name": "getSplitConfig",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "payoutToken",
+            "type": "address"
+          },
+          {
+            "internalType": "uint32",
+            "name": "payinShares",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "payoutShares",
+            "type": "uint32"
+          },
+          {
+            "internalType": "address",
+            "name": "paymentToken",
+            "type": "address"
+          },
+          {
+            "internalType": "uint48",
+            "name": "price",
+            "type": "uint48"
+          },
+          {
+            "internalType": "bool",
+            "name": "enabled",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct LibSplit.SplitConfig",
+        "name": "config",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "payinToken",
+        "type": "address"
+      }
+    ],
+    "name": "getSplitPayment",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint96",
+        "name": "balance",
+        "type": "uint96"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "payinToken",
+        "type": "address"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "payoutToken",
+            "type": "address"
+          },
+          {
+            "internalType": "uint32",
+            "name": "payinShares",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "payoutShares",
+            "type": "uint32"
+          },
+          {
+            "internalType": "address",
+            "name": "paymentToken",
+            "type": "address"
+          },
+          {
+            "internalType": "uint48",
+            "name": "price",
+            "type": "uint48"
+          },
+          {
+            "internalType": "bool",
+            "name": "enabled",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct LibSplit.SplitConfig",
+        "name": "config",
+        "type": "tuple"
+      }
+    ],
+    "name": "updateSplitConfig",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "payinToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "paymentToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint64",
+        "name": "paymentAmount",
+        "type": "uint64"
+      }
+    ],
+    "name": "withdrawSplitPayment",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

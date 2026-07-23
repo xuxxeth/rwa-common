@@ -15,8 +15,8 @@ export const bscTestContracts: Record<string, Address> = {
 }
 
 export const xLayerTestContracts: Record<string, Address> = {
-  usdt: '0x',
-  trading: '0x',
-  market: '0x',
+  usdt: '0x9A0F5D3aac1F9aE8f92CC9babf27aac82d933e95',
+  trading: '0x218feb3999e941F9878A134030E1aC6eB37d26bA',
+  market: '0x218feb3999e941F9878A134030E1aC6eB37d26bA',
   counter: '0x9A885B44c4C2adCbFA509859749fC73FF2Da1020'
 }

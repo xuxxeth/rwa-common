@@ -35,24 +35,6 @@ export function useTokenBalances() {
     [publicClient]
   );
 
-  const getTokenBalancesByTradingContract = useCallback(
-    async (account: Address, tokens: Address[]) => {
-      if (publicClient && tradingContract) {
-        try {
-          const result = await tradingContract.read.getBalances([
-            account,
-            tokens,
-          ]);
-          return result;
-        } catch (error) {
-          console.log("getTokenBalancesByTradingContract error", error);
-          return [];
-        }
-      }
-    },
-    [publicClient]
-  );
-
   // 获取原生代币的余额
   const getBalance = useCallback(
     async (account: Address) => {
@@ -74,7 +56,6 @@ export function useTokenBalances() {
 
   return {
     getTokenBalances,
-    getTokenBalancesByTradingContract,
     getBalance,
   };
 }

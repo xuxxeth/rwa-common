@@ -78,20 +78,23 @@ export function useTokenAllowanceByChainId({
   refetch: () => Promise<BigInt>
 } {
   const { publicClient } = useClient()
-
   const [allowance, setAllowance] = useState(BigInt(0))
-
+  // 避免token\spender地址和publicClient不在同一个链上查询报错
   const refetch = useCallback(async () => {
-    if (publicClient && token && spender && owner) {
-      const inputs = [owner, spender] as [`0x${string}`, `0x${string}`]
-      const _allowance = await publicClient.readContract({
-        abi: erc20Abi,
-        address: token as Address,
-        functionName: 'allowance',
-        args: inputs,
-      })
-      setAllowance(_allowance)
-      return _allowance
+    try {
+      if (publicClient && token && spender && owner) {
+        const inputs = [owner, spender] as [`0x${string}`, `0x${string}`]
+        const _allowance = await publicClient.readContract({
+          abi: erc20Abi,
+          address: token as Address,
+          functionName: 'allowance',
+          args: inputs,
+        })
+        setAllowance(_allowance)
+        return _allowance
+      }
+    } catch(error) {
+
     }
     return BigInt(0)
   }, [publicClient, token, spender, owner])
