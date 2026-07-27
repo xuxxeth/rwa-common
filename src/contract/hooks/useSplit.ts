@@ -55,7 +55,7 @@ export function useSplit(token?: Address, spender?: Address, amount: BigInt = Bi
               data: {
                 errorCode: ERROR_CODE.TXERROR,
                 name: 'tx error',
-                message: 'exchangeTokenFail'
+                message: 'apIns'
               },
             }
           }
@@ -68,7 +68,7 @@ export function useSplit(token?: Address, spender?: Address, amount: BigInt = Bi
               data: {
                 errorCode: ERROR_CODE.ALLOWANCE,
                 name: 'tx error',
-                message: 'exchangeTokenFail'
+                message: 'apIns'
               },
             }
           }
