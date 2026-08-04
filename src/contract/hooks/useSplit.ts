@@ -82,7 +82,7 @@ export function useSplit(token?: Address, spender?: Address, amount: BigInt = Bi
         const tx = await callWithGasPrice(splitContract, 'exchangeToken', [params.payinToken, params.payinAmount], {
           value: options?.value !== undefined ? BigInt(options?.value) : undefined, 
           skipSimulate: options?.skipSimulate,
-          gas: 300000n
+          gas: 400000n
         })
         
         setTxStep(2)
